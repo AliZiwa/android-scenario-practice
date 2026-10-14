@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -36,7 +37,14 @@ fun NoteDetailScreen(
         key = "note-$noteId",
         factory = viewModelFactory { initializer { NoteDetailViewModel(noteId, repository) } },
     )
-    val note by viewModel.note.collectAsState()
+    val noteUiState by viewModel.noteUiState.collectAsState()
+    val note = (noteUiState as? NoteDetailUiState.Loaded)?.note
+
+    LaunchedEffect(noteUiState) {
+        if(noteUiState is NoteDetailUiState.Gone) {
+             onBack()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -60,7 +68,6 @@ fun NoteDetailScreen(
                 OutlinedButton(
                     onClick = {
                         viewModel.delete()
-                        onBack()
                     },
                 ) { Text("Delete") }
             }

@@ -32,9 +32,8 @@ class NotesListViewModel(
         sync()
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     private fun observeNotes() {
-        GlobalScope.launch(Dispatchers.Main) {
+        viewModelScope.launch {
             repository.observeNotes().collect { notes ->
                 uiState.update { it.copy(notes = notes) }
             }
@@ -42,16 +41,17 @@ class NotesListViewModel(
     }
 
     fun sync() {
-        val countBefore = uiState.value.syncCount
-        uiState.value = uiState.value.copy(isSyncing = true, error = null)
-        try {
-            viewModelScope.launch {
+        viewModelScope.launch {
+            val countBefore = uiState.value.syncCount
+            uiState.update { it.copy(isSyncing = true, error = null) }
+
+            try {
                 repository.syncFromRemote()
                 uiState.update { it.copy(isSyncing = false, syncCount = countBefore + 1) }
-            }
-        } catch (t: Throwable) {
-            uiState.update {
-                it.copy(isSyncing = false, error = t.message ?: "Sync failed")
+            } catch (t: Throwable) {
+                uiState.update {
+                    it.copy(isSyncing = false, error = t.message ?: "Sync failed")
+                }
             }
         }
     }

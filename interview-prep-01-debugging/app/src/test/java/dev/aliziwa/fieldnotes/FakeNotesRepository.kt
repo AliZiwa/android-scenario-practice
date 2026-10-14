@@ -20,8 +20,8 @@ class FakeNotesRepository : NotesRepository {
 
     override fun observeNotes(): Flow<List<Note>> = notes
 
-    override fun observeNote(id: Long): Flow<Note> =
-        notes.map { list -> list.first { it.id == id } }
+    override fun observeNote(id: Long): Flow<Note?> =
+        notes.map { list -> list.firstOrNull { it.id == id } }
 
     override suspend fun create(title: String, body: String): Long {
         val id = (notes.value.maxOfOrNull { it.id } ?: 0L) + 1

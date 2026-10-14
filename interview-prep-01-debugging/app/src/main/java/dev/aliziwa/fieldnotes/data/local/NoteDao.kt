@@ -2,6 +2,7 @@ package dev.aliziwa.fieldnotes.data.local
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
@@ -18,10 +19,10 @@ interface NoteDao {
     @Query("SELECT * FROM notes")
     suspend fun getAllOnce(): List<NoteEntity>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(note: NoteEntity): Long
 
-    @Update
+    @Update(onConflict = OnConflictStrategy.IGNORE)
     suspend fun update(note: NoteEntity)
 
     @Query("DELETE FROM notes WHERE id = :id")

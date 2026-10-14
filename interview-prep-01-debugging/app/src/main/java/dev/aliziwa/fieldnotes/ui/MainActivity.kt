@@ -13,13 +13,11 @@ import dev.aliziwa.fieldnotes.sync.SyncManager
 class MainActivity : ComponentActivity() {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    var container: AppContainer? = null
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     var toastListener: SyncManager.Listener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        container = (application as FieldNotesApp).container
+        val container = (application as FieldNotesApp).container
         toastListener = SyncManager.Listener { added -> Toast.makeText(this@MainActivity, "Sync finished: $added new", Toast.LENGTH_SHORT).show() }
         toastListener?.let {
             SyncManager.addListener(it)
@@ -27,16 +25,13 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MaterialTheme {
-                container?.let {
-                    FieldNotesNavHost(it)
-                }
+                FieldNotesNavHost(container)
             }
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        container = null
         toastListener?.let {
             SyncManager.removeListener(it)
         }

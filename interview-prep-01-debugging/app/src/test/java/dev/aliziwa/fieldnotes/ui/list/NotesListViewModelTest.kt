@@ -3,9 +3,13 @@ package dev.aliziwa.fieldnotes.ui.list
 import app.cash.turbine.test
 import dev.aliziwa.fieldnotes.FakeNotesRepository
 import dev.aliziwa.fieldnotes.MainDispatcherRule
+import dev.aliziwa.fieldnotes.domain.Note
+import dev.aliziwa.fieldnotes.ui.detail.NoteDetailUiState
 import dev.aliziwa.fieldnotes.ui.detail.NoteDetailViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -32,13 +36,22 @@ class NotesListViewModelTest {
 
     @Test
     fun `on delete removes item from list`() = runTest {
-        val addedNoteId = repository.create("title", "body")
+        repository.notes.emit(
+            listOf(
+                Note(1, null, "title", "body", updatedAt = 1L),
+                Note(2, null, "title", "body", updatedAt = 2L)
+            )
+        )
 
-        val viewModel = NoteDetailViewModel(addedNoteId, repository)
-        viewModel.delete()
+        val viewModel = NoteDetailViewModel(1, repository)
+        assertTrue(viewModel.noteUiState.value is NoteDetailUiState.Loading)
 
-        assertTrue(viewModel.note.value == null)
-
+        viewModel.noteUiState.test {
+            assertTrue(awaitItem() is NoteDetailUiState.Loaded)
+            viewModel.delete()
+            assertTrue(awaitItem() is NoteDetailUiState.Gone)
+        }
+        advanceUntilIdle()
     }
 
     @Test

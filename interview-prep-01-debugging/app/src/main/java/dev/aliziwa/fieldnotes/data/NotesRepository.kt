@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
 
 interface NotesRepository {
     fun observeNotes(): Flow<List<Note>>
-    fun observeNote(id: Long): Flow<Note>
+    fun observeNote(id: Long): Flow<Note?>
     suspend fun create(title: String, body: String): Long
     suspend fun update(note: Note)
     suspend fun delete(id: Long)
@@ -32,8 +32,8 @@ class DefaultNotesRepository(
     override fun observeNotes(): Flow<List<Note>> =
         dao.observeAll().map { entities -> entities.map { it.toDomain() } }
 
-    override fun observeNote(id: Long): Flow<Note> =
-        dao.observeById(id).mapNotNull { it?.toDomain() }
+    override fun observeNote(id: Long): Flow<Note?> =
+        dao.observeById(id).map { it?.toDomain() }
 
     override suspend fun create(title: String, body: String): Long =
         dao.insert(

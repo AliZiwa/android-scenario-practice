@@ -1,6 +1,7 @@
 package dev.aliziwa.fieldnotes.data.local
 
 import androidx.room.Entity
+import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import dev.aliziwa.fieldnotes.domain.Note
 

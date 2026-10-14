@@ -24,8 +24,8 @@ class NotesListViewModel(
     private val repository: NotesRepository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(NotesListUiState())
-    val uiState: StateFlow<NotesListUiState> = _uiState.asStateFlow()
+    val uiState: StateFlow<NotesListUiState>
+        field = MutableStateFlow(NotesListUiState())
 
     init {
         observeNotes()
@@ -36,27 +36,27 @@ class NotesListViewModel(
     private fun observeNotes() {
         GlobalScope.launch(Dispatchers.Main) {
             repository.observeNotes().collect { notes ->
-                _uiState.update { it.copy(notes = notes) }
+                uiState.update { it.copy(notes = notes) }
             }
         }
     }
 
     fun sync() {
         viewModelScope.launch {
-            val countBefore = _uiState.value.syncCount
-            _uiState.update { it.copy(isSyncing = true, error = null) }
+            val countBefore = uiState.value.syncCount
+            uiState.update { it.copy(isSyncing = true, error = null) }
             try {
                 repository.syncFromRemote()
-                _uiState.update { it.copy(isSyncing = false, syncCount = countBefore + 1) }
+                uiState.update { it.copy(isSyncing = false, syncCount = countBefore + 1) }
             } catch (t: Throwable) {
-                _uiState.update { it.copy(isSyncing = false, error = t.message ?: "Sync failed") }
+                uiState.update { it.copy(isSyncing = false, error = t.message ?: "Sync failed") }
             }
         }
     }
 
     fun addQuickNote() {
         viewModelScope.launch {
-            val n = _uiState.value.notes.size + 1
+            val n = uiState.value.notes.size + 1
             repository.create(title = "Quick note $n", body = "Captured on device.")
         }
     }

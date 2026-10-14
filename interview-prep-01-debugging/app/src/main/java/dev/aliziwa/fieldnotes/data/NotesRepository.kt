@@ -10,6 +10,7 @@ import dev.aliziwa.fieldnotes.sync.SyncManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.withContext
 
 interface NotesRepository {
@@ -32,7 +33,7 @@ class DefaultNotesRepository(
         dao.observeAll().map { entities -> entities.map { it.toDomain() } }
 
     override fun observeNote(id: Long): Flow<Note> =
-        dao.observeById(id).map { it!!.toDomain() }
+        dao.observeById(id).mapNotNull { it?.toDomain() }
 
     override suspend fun create(title: String, body: String): Long =
         dao.insert(

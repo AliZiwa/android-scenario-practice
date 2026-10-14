@@ -2,6 +2,7 @@ package dev.aliziwa.fieldnotes.ui.list
 
 import dev.aliziwa.fieldnotes.FakeNotesRepository
 import dev.aliziwa.fieldnotes.MainDispatcherRule
+import dev.aliziwa.fieldnotes.ui.detail.NoteDetailViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -24,6 +25,18 @@ class NotesListViewModelTest {
         assertEquals(1, repository.syncCalls)
         assertEquals(1, viewModel.uiState.value.syncCount)
         assertTrue(viewModel.uiState.value.notes.isEmpty())
+    }
+
+
+    @Test
+    fun `on delete removes item from list`() = runTest {
+        val addedNoteId = repository.create("title", "body")
+
+        val viewModel = NoteDetailViewModel(addedNoteId, repository)
+        viewModel.delete()
+
+        assertTrue(viewModel.note.value == null)
+
     }
 
     // Add your regression tests below. Each defect you fix should have a test that fails on main

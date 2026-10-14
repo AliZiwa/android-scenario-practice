@@ -50,7 +50,7 @@ fun NotesListScreen(
                         style = MaterialTheme.typography.labelLarge,
                         modifier = Modifier.padding(end = 12.dp),
                     )
-                    Button(onClick = viewModel::sync, enabled = true) { Text("Sync") }
+                    Button(onClick = viewModel::sync, enabled = !state.isSyncing) { Text("Sync") }
                 },
             )
         },

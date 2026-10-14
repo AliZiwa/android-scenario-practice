@@ -42,14 +42,16 @@ class NotesListViewModel(
     }
 
     fun sync() {
-        viewModelScope.launch {
-            val countBefore = uiState.value.syncCount
-            uiState.update { it.copy(isSyncing = true, error = null) }
-            try {
+        val countBefore = uiState.value.syncCount
+        uiState.value = uiState.value.copy(isSyncing = true, error = null)
+        try {
+            viewModelScope.launch {
                 repository.syncFromRemote()
                 uiState.update { it.copy(isSyncing = false, syncCount = countBefore + 1) }
-            } catch (t: Throwable) {
-                uiState.update { it.copy(isSyncing = false, error = t.message ?: "Sync failed") }
+            }
+        } catch (t: Throwable) {
+            uiState.update {
+                it.copy(isSyncing = false, error = t.message ?: "Sync failed")
             }
         }
     }

@@ -1,9 +1,11 @@
 package dev.aliziwa.fieldnotes.ui.list
 
+import app.cash.turbine.test
 import dev.aliziwa.fieldnotes.FakeNotesRepository
 import dev.aliziwa.fieldnotes.MainDispatcherRule
 import dev.aliziwa.fieldnotes.ui.detail.NoteDetailViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -36,6 +38,23 @@ class NotesListViewModelTest {
         viewModel.delete()
 
         assertTrue(viewModel.note.value == null)
+
+    }
+
+    @Test
+    fun `on sync uiState updates after completion of sync`() = runTest {
+        val viewModel = NotesListViewModel(repository)
+
+        viewModel.sync()
+        viewModel.sync()
+        viewModel.sync()
+        viewModel.sync()
+
+        viewModel.uiState.test {
+            val item = awaitItem()
+            assertEquals(5, item.syncCount)
+            assertEquals(false, item.isSyncing)
+        }
 
     }
 

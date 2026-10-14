@@ -1,5 +1,31 @@
 # Assignment 01: Debugging — Score
 
+## Round 2 (commit b85b521): 14 / 25. Still below the pass line (20).
+
+Two of three defects are now fixed properly. The race is not, and nothing in the PR proves it either way.
+
+| Dimension | Round 1 | Round 2 | Why |
+|---|---|---|---|
+| Correctness | 2 | 3 | Crash: fixed at the root. Leak: both paths fixed (`viewModelScope`, listener removal). Race: `OnConflictStrategy.IGNORE` without a unique index on `remoteId` ignores nothing, because the only key is the auto-generated `id`; duplicates still insert. `countBefore + 1` still loses updates. |
+| Architecture and boundaries | 2 | 4 | Sealed state and `LaunchedEffect` are the right shape. `container` nulling reverted, `applicationContext` restored. The button guard was correctly removed, but the repository is still not safe for overlapping callers. |
+| Code quality and idiom | 2 | 3 | Unused imports (`StandardTestDispatcher`, `UnconfinedTestDispatcher`, `OnConflictStrategy` in the entity, `LeakCanaryReflectionHelper`). `@Update(onConflict = IGNORE)` is meaningless on an update by primary key. `advanceUntilIdle()` after a finished Turbine block does nothing. The hardcoded `ui-test-junit4` in `testImplementation` is still there. |
+| Tests | 1 | 2 | The delete test is now real: subscribes, sees `Loaded`, then `Gone`. The leak test adds `DetectLeaksAfterTestSuccess` but never recreates the Activity, so it would not have caught the original bug; add `scenario.recreate()` before the assertion. The sync test is unchanged and still passes on `main`. |
+| Communication | 2 | 2 | `DEBUG_LOG.md` is still empty. The round-2 commit is "Addressing PR comments" plus a merge commit; neither says what was wrong or what changed. |
+
+## What is left
+
+1. **Unique index.** `@Entity(tableName = "notes", indices = [Index(value = ["remoteId"], unique = true)])`. Only then does `IGNORE` on insert do anything. Check how `syncFromRemote` counts `added` once some inserts are ignored: `insert` returns `-1` for an ignored row.
+2. **Counter.** `uiState.update { it.copy(isSyncing = false, syncCount = it.syncCount + 1) }`. Read the current value inside the CAS, not before the suspension.
+3. **Sync test.** Set `repository.syncGate = CompletableDeferred()`, call `sync()` twice, then `syncGate.complete(Unit)`, then assert `syncCalls == 2` and `syncCount` went up by exactly 2 (plus the one from `init`). This fails on `main` because of the lost update, and passes once item 2 is in.
+4. **`DEBUG_LOG.md`.** Three entries, mechanism not symptom. The round-1 crash entry should explain why `mapNotNull` was the wrong fix; that is the kind of reasoning the log is for.
+5. Delete the unused imports and the `@Update` conflict strategy, rename the delete test for what it asserts, and drop `advanceUntilIdle()`.
+
+Items 1 to 3 are about 15 lines. With those plus the log, this is a pass.
+
+---
+
+## Round 1 (commit c1d2c91)
+
 **Result: 9 / 25. Below the pass line (20).** The crash fix is sound, the leak fix is half right, the race is not fixed and the change introduces a new crash path. None of the three tests fail on `main`. Details below, then what a pass would have looked like.
 
 | Dimension | Score | Why |

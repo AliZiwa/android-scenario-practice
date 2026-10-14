@@ -14,7 +14,7 @@ import dev.aliziwa.fieldnotes.data.remote.RemoteNotesApi
 class AppContainer(context: Context) {
 
     private val database: NotesDatabase = Room.databaseBuilder(
-        context.applicationContext,
+        context,
         NotesDatabase::class.java,
         "fieldnotes.db",
     ).build()

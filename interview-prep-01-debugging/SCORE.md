@@ -1,5 +1,29 @@
 # Assignment 01: Debugging — Score
 
+## Round 3 (commit d7c4b40): 16 / 25. Still below the pass line (20), and close.
+
+All three defects are now fixed in the code. What keeps this under 20 is verification and cleanup, not the fixes.
+
+| Dimension | R1 | R2 | R3 | Why |
+|---|---|---|---|---|
+| Correctness | 2 | 3 | 4 | Unique index on `remoteId` plus `IGNORE` stops the duplicates; `it.syncCount + 1` fixes the counter. One leftover: `syncFromRemote` still does `added++` after every insert, but an ignored insert returns `-1`, so an overlapping sync reports "5 new" for rows it did not add. |
+| Architecture and boundaries | 2 | 4 | 4 | Fix is now in the data layer where every caller benefits. Unchanged from round 2. |
+| Code quality and idiom | 2 | 3 | 3 | None of the round-2 cleanup landed: unused imports, the no-op `@Update(onConflict = IGNORE)`, `advanceUntilIdle()` after the Turbine block, the misnamed delete test, the hardcoded `ui-test-junit4` in `testImplementation`. |
+| Tests | 1 | 2 | 2 | The race has no test. The sync test is byte-for-byte the round-1 version and passes on `main`. The leak test still never recreates the Activity. |
+| Communication | 2 | 2 | 3 | `DEBUG_LOG.md` is filled in, which is the point. But Defect 3 claims "transaction handling" that does not exist in the diff, and names a regression test ("No conflicts") that was never written. The log must describe what is actually in the branch. The commit message is "Addressing PR comments v2". |
+
+## What is left for a pass
+
+1. **The gated sync test.** `repository.syncGate = CompletableDeferred()`; `sync()` twice; `syncGate.complete(Unit)`; assert `repository.syncCalls == 2` and `syncCount` rose by exactly 2 beyond the init sync. On `main` (old counter) it reports one less. This is the single biggest missing item.
+2. **Count only real inserts.** `if (dao.insert(...) != -1L) added++`.
+3. **Cleanup list from round 2**, five minutes of work.
+4. **Fix the log** so Defect 3 says index plus IGNORE plus CAS counter, and names the test you actually wrote.
+5. Commit message that names the change, not the round.
+
+With 1 and 2 this lands at about 20; with 3 and 4 as well, 22 or 23.
+
+---
+
 ## Round 2 (commit b85b521): 14 / 25. Still below the pass line (20).
 
 Two of three defects are now fixed properly. The race is not, and nothing in the PR proves it either way.

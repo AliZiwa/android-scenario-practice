@@ -13,6 +13,7 @@ androidxJunit = "1.3.0"
 espressoCore = "3.7.0"
 turbine = "1.2.1"
 leakcanary = "1.0.0"
+leakcanary-square = "2.14"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -38,6 +39,7 @@ turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxJunit" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 leakcanary = { group = "com.android.tools.studio.leakcanary", name = "leakcanary", version.ref = "leakcanary" }
+leakcanary-square = { group = "com.squareup.leakcanary", name = "leakcanary-android-instrumentation", version.ref = "leakcanary-square" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

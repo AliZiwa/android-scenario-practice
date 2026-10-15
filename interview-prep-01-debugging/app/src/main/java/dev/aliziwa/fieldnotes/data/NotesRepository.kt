@@ -10,11 +10,12 @@ import dev.aliziwa.fieldnotes.sync.SyncManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.withContext
 
 interface NotesRepository {
     fun observeNotes(): Flow<List<Note>>
-    fun observeNote(id: Long): Flow<Note>
+    fun observeNote(id: Long): Flow<Note?>
     suspend fun create(title: String, body: String): Long
     suspend fun update(note: Note)
     suspend fun delete(id: Long)
@@ -31,8 +32,8 @@ class DefaultNotesRepository(
     override fun observeNotes(): Flow<List<Note>> =
         dao.observeAll().map { entities -> entities.map { it.toDomain() } }
 
-    override fun observeNote(id: Long): Flow<Note> =
-        dao.observeById(id).map { it!!.toDomain() }
+    override fun observeNote(id: Long): Flow<Note?> =
+        dao.observeById(id).map { it?.toDomain() }
 
     override suspend fun create(title: String, body: String): Long =
         dao.insert(
@@ -54,7 +55,7 @@ class DefaultNotesRepository(
         var added = 0
         for (r in remote) {
             if (r.id !in known) {
-                dao.insert(
+                val insertedId = dao.insert(
                     NoteEntity(
                         remoteId = r.id,
                         title = r.title,
@@ -62,7 +63,9 @@ class DefaultNotesRepository(
                         updatedAt = r.updatedAt,
                     ),
                 )
-                added++
+                if (insertedId != -1L) {
+                    added++
+                }
             }
         }
         withContext(Dispatchers.Main) { SyncManager.notifyFinished(added) }

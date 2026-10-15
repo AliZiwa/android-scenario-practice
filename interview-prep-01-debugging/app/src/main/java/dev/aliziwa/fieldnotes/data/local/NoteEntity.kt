@@ -1,10 +1,14 @@
 package dev.aliziwa.fieldnotes.data.local
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import dev.aliziwa.fieldnotes.domain.Note
 
-@Entity(tableName = "notes")
+@Entity(
+    tableName = "notes",
+    indices = [Index(value = ["remoteId"], unique = true)]
+)
 data class NoteEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val remoteId: String?,

@@ -6,17 +6,13 @@ import dev.aliziwa.fieldnotes.MainDispatcherRule
 import dev.aliziwa.fieldnotes.domain.Note
 import dev.aliziwa.fieldnotes.ui.detail.NoteDetailUiState
 import dev.aliziwa.fieldnotes.ui.detail.NoteDetailViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class NotesListViewModelTest {
 
     @get:Rule
@@ -33,9 +29,8 @@ class NotesListViewModelTest {
         assertTrue(viewModel.uiState.value.notes.isEmpty())
     }
 
-
     @Test
-    fun `on delete removes item from list`() = runTest {
+    fun `on delete transitions noteUiState to Gone`() = runTest {
         repository.notes.emit(
             listOf(
                 Note(1, null, "title", "body", updatedAt = 1L),
@@ -51,7 +46,6 @@ class NotesListViewModelTest {
             viewModel.delete()
             assertTrue(awaitItem() is NoteDetailUiState.Gone)
         }
-        advanceUntilIdle()
     }
 
     @Test
@@ -68,9 +62,28 @@ class NotesListViewModelTest {
             assertEquals(5, item.syncCount)
             assertEquals(false, item.isSyncing)
         }
-
     }
 
-    // Add your regression tests below. Each defect you fix should have a test that fails on main
-    // and passes on your branch. Turbine is on the test classpath for Flow assertions.
+    @Test
+    fun `overlapping syncs atomically increment syncCount without lost updates`() = runTest {
+        val viewModel = NotesListViewModel(repository)
+        assertEquals(1, viewModel.uiState.value.syncCount)
+        assertEquals(1, repository.syncCalls)
+
+        val gate = CompletableDeferred<Unit>()
+        repository.syncGate = gate
+
+        viewModel.sync()
+        viewModel.sync()
+
+        assertEquals(3, repository.syncCalls)
+
+        gate.complete(Unit)
+
+        viewModel.uiState.test {
+            val finalState = awaitItem()
+            assertEquals(3, finalState.syncCount)
+            assertEquals(false, finalState.isSyncing)
+        }
+    }
 }

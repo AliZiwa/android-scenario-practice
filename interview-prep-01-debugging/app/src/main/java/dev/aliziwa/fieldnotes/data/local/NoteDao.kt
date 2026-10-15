@@ -22,7 +22,7 @@ interface NoteDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(note: NoteEntity): Long
 
-    @Update(onConflict = OnConflictStrategy.IGNORE)
+    @Update
     suspend fun update(note: NoteEntity)
 
     @Query("DELETE FROM notes WHERE id = :id")

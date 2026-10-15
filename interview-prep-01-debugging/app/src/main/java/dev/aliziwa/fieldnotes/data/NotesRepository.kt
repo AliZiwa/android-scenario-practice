@@ -55,7 +55,7 @@ class DefaultNotesRepository(
         var added = 0
         for (r in remote) {
             if (r.id !in known) {
-                dao.insert(
+                val insertedId = dao.insert(
                     NoteEntity(
                         remoteId = r.id,
                         title = r.title,
@@ -63,7 +63,9 @@ class DefaultNotesRepository(
                         updatedAt = r.updatedAt,
                     ),
                 )
-                added++
+                if (insertedId != -1L) {
+                    added++
+                }
             }
         }
         withContext(Dispatchers.Main) { SyncManager.notifyFinished(added) }

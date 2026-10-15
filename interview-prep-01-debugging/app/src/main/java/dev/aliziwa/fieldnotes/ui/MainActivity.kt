@@ -7,7 +7,6 @@ import androidx.activity.compose.setContent
 import androidx.annotation.VisibleForTesting
 import androidx.compose.material3.MaterialTheme
 import dev.aliziwa.fieldnotes.FieldNotesApp
-import dev.aliziwa.fieldnotes.di.AppContainer
 import dev.aliziwa.fieldnotes.sync.SyncManager
 
 class MainActivity : ComponentActivity() {

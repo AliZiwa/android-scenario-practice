@@ -3,10 +3,8 @@ package dev.aliziwa.fieldnotes
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.lifecycle.Lifecycle
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.android.tools.studio.leakcanary.LeakCanaryReflectionHelper
-import dev.aliziwa.fieldnotes.sync.SyncManager
 import dev.aliziwa.fieldnotes.ui.MainActivity
-import junit.framework.TestCase.assertTrue
+import junit.framework.TestCase.assertNotNull
 import leakcanary.DetectLeaksAfterTestSuccess
 import org.junit.Rule
 import org.junit.Test
@@ -22,13 +20,18 @@ class MainActivityTest {
     val detectLeakAfterTest = DetectLeaksAfterTestSuccess()
 
     @Test
-    fun onCreateInitializesAllProperties() {
+    fun onCreateInitializesAllPropertiesAndRecreatesWithoutLeaks() {
         val scenario = composeTestRule.activityRule.scenario
         scenario.moveToState(Lifecycle.State.RESUMED)
 
         scenario.onActivity {
-            assertTrue(it.toastListener != null)
+            assertNotNull(it.toastListener)
         }
 
+        scenario.recreate()
+
+        scenario.onActivity {
+            assertNotNull(it.toastListener)
+        }
     }
 }

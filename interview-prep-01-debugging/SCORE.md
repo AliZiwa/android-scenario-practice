@@ -1,5 +1,27 @@
 # Assignment 01: Debugging — Score
 
+## Round 4 (commit ff11bdd): 21 / 25. Pass.
+
+| Dimension | R1 | R2 | R3 | R4 | Why |
+|---|---|---|---|---|---|
+| Correctness | 2 | 3 | 4 | 5 | All three defects fixed at the root. `added` now counts only real inserts. |
+| Architecture and boundaries | 2 | 4 | 4 | 4 | Fixes in the right layers. `SyncManager.listeners` thread safety is noted but left; that is a fair call for this scope, and the right place to say so is where you said it. |
+| Code quality and idiom | 2 | 3 | 3 | 4 | Round-2 cleanup landed: unused imports, the no-op `@Update` strategy, `advanceUntilIdle()`, the hardcoded test dependency. One leftover: the round-1 sync test (`on sync uiState updates after completion of sync`) is still there; it proves nothing and should go. |
+| Tests | 1 | 2 | 2 | 4 | The gated test is correct: both syncs block on `syncGate`, `syncCalls == 3`, release, `syncCount == 3`. On `main` both would write `2`, so it fails there. The leak test now recreates the Activity under `DetectLeaksAfterTestSuccess`. Not a 5 because the dead test remains and the repository-level duplicate (unique index) has no test of its own; a DAO test with an in-memory Room database would cover it. |
+| Communication | 2 | 2 | 3 | 4 | The log is now accurate, mechanism-level, and names the real tests; this is what the document is for. One slip: it mentions removing a `@Transaction` annotation that never existed. The commit message is still "Addressing PR comments v4"; a reviewer scanning history learns nothing from it. |
+
+## What a 23 to 24 would have added
+
+- Delete the round-1 sync test.
+- A `NoteDaoTest` on an in-memory Room database proving two inserts with the same `remoteId` leave one row.
+- Commit messages that name the change ("Add unique index on remoteId; count only real inserts").
+
+## Interview notes
+
+You can now answer every question in `INTERVIEW.md` from your own diff. Be ready in particular for 2 (why `Loading` is never observed under an unconfined dispatcher), 7 (the three layers a race can be fixed in and why you chose the index), and 9 (what happened to exceptions in the round-1 `sync()`). Those three are the questions that separate "fixed it" from "understood it".
+
+---
+
 ## Round 3 (commit d7c4b40): 16 / 25. Still below the pass line (20), and close.
 
 All three defects are now fixed in the code. What keeps this under 20 is verification and cleanup, not the fixes.

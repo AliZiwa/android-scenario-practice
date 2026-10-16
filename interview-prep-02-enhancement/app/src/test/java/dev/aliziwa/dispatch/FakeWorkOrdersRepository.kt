@@ -1,11 +1,13 @@
 package dev.aliziwa.dispatch
 
+import dev.aliziwa.dispatch.data.UpdateWorkOrderResult
 import dev.aliziwa.dispatch.data.WorkOrdersRepository
 import dev.aliziwa.dispatch.domain.WorkOrder
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 
 /**
  * In-memory repository for ViewModel tests, same idea as assignment 01's FakeNotesRepository.
@@ -15,6 +17,8 @@ import kotlinx.coroutines.flow.map
 class FakeWorkOrdersRepository : WorkOrdersRepository {
 
     val workOrders = MutableStateFlow<List<WorkOrder>>(emptyList())
+    val updatedWorkOrders = mutableListOf<WorkOrder>()
+    var updateResult: UpdateWorkOrderResult = UpdateWorkOrderResult.Applied
     var refreshGate: CompletableDeferred<Unit>? = null
     var refreshError: Throwable? = null
     var refreshCalls = 0
@@ -24,6 +28,19 @@ class FakeWorkOrdersRepository : WorkOrdersRepository {
 
     override fun observeWorkOrder(id: String): Flow<WorkOrder?> =
         workOrders.map { list -> list.firstOrNull { it.id == id } }
+
+    override suspend fun updateWorkOrderStatus(updatedWorkOrder: WorkOrder): UpdateWorkOrderResult {
+        updatedWorkOrders.add(updatedWorkOrder)
+        workOrders.update { list ->
+            val existing = list.find { it.id == updatedWorkOrder.id }
+            if (existing != null) {
+                list.map { if (it.id == updatedWorkOrder.id) updatedWorkOrder else it }
+            } else {
+                list + updatedWorkOrder
+            }
+        }
+        return updateResult
+    }
 
     override suspend fun refresh(): Int {
         refreshCalls++

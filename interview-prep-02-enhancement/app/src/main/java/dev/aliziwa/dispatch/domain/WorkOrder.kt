@@ -2,7 +2,15 @@ package dev.aliziwa.dispatch.domain
 
 enum class Priority { HIGH, MEDIUM, LOW }
 
-enum class Status { OPEN, IN_PROGRESS, DONE }
+enum class Status {
+    OPEN, IN_PROGRESS, DONE;
+
+    fun next(): Status? = when (this) {
+        OPEN -> IN_PROGRESS
+        IN_PROGRESS -> DONE
+        DONE -> null
+    }
+}
 
 /**
  * A job assigned to a technician. [version] is the server's optimistic-concurrency token:
@@ -16,4 +24,5 @@ data class WorkOrder(
     val status: Status,
     val version: Int,
     val updatedAt: Long,
+    val isPending: Boolean = false,
 )

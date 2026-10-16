@@ -40,4 +40,7 @@ abstract class WorkOrderDao {
         deleteAll()
         upsertAll(entities)
     }
+
+    @Query("SELECT * FROM work_orders WHERE isPending = 1")
+    abstract suspend fun getAllPending(): List<WorkOrderEntity>
 }

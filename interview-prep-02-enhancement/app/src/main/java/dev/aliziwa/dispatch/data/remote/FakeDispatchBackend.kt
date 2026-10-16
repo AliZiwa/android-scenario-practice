@@ -66,7 +66,12 @@ class FakeDispatchBackend(
 
     private fun serveItem(request: Request, id: String): Response {
         val item = store[id] ?: return respond(request, 404, """{"error":"not_found"}""")
-        return respond(request, 200, json.encodeToString(WorkOrderDto.serializer(), item))
+        return respond(
+            request, 200, json.encodeToString(
+                serializer = WorkOrderDto.serializer(),
+                value = item
+            )
+        )
     }
 
     private fun servePatch(request: Request, id: String): Response {
@@ -84,10 +89,19 @@ class FakeDispatchBackend(
             ?: return respond(request, 400, """{"error":"missing_version"}""")
 
         if (version != current.version) {
-            return respond(request, 409, json.encodeToString(WorkOrderDto.serializer(), current))
+            return respond(
+                request, 409, json.encodeToString(
+                    serializer = WorkOrderDto.serializer(),
+                    value = current
+                )
+            )
         }
         if (!isAllowedTransition(current.status, status)) {
-            return respond(request, 400, """{"error":"invalid_transition","from":"${current.status}","to":"$status"}""")
+            return respond(
+                request,
+                400,
+                """{"error":"invalid_transition","from":"${current.status}","to":"$status"}"""
+            )
         }
         val updated = current.copy(
             status = status,
@@ -95,7 +109,12 @@ class FakeDispatchBackend(
             updatedAt = System.currentTimeMillis(),
         )
         store[id] = updated
-        return respond(request, 200, json.encodeToString(WorkOrderDto.serializer(), updated))
+        return respond(
+            request, 200, json.encodeToString(
+                serializer = WorkOrderDto.serializer(),
+                value = updated
+            )
+        )
     }
 
     /** Another client bumps wo-104 behind this device's back. */
@@ -137,12 +156,60 @@ class FakeDispatchBackend(
         val ITEM_PATH = Regex("/work-orders/([^/]+)")
 
         val SEED = listOf(
-            WorkOrderDto("wo-101", "Replace hydraulic seal, lift 3", "Bay 3", "HIGH", "OPEN", 1, 1_760_400_000_000),
-            WorkOrderDto("wo-102", "TPMS reset and tread check", "Bay 1", "MEDIUM", "OPEN", 1, 1_760_400_600_000),
-            WorkOrderDto("wo-103", "Brake pads and rotors, front", "Bay 2", "HIGH", "IN_PROGRESS", 2, 1_760_401_200_000),
-            WorkOrderDto("wo-104", "Locker 7 door sensor harness", "Bay 5", "LOW", "OPEN", 3, 1_760_401_800_000),
-            WorkOrderDto("wo-105", "Oil bay drain pan swap", "Bay 4", "MEDIUM", "DONE", 4, 1_760_402_400_000),
-            WorkOrderDto("wo-106", "Compressor belt inspection", "Yard", "LOW", "OPEN", 1, 1_760_403_000_000),
+            WorkOrderDto(
+                "wo-101",
+                "Replace hydraulic seal, lift 3",
+                "Bay 3",
+                "HIGH",
+                "OPEN",
+                1,
+                1_760_400_000_000
+            ),
+            WorkOrderDto(
+                "wo-102",
+                "TPMS reset and tread check",
+                "Bay 1",
+                "MEDIUM",
+                "OPEN",
+                1,
+                1_760_400_600_000
+            ),
+            WorkOrderDto(
+                "wo-103",
+                "Brake pads and rotors, front",
+                "Bay 2",
+                "HIGH",
+                "IN_PROGRESS",
+                2,
+                1_760_401_200_000
+            ),
+            WorkOrderDto(
+                "wo-104",
+                "Locker 7 door sensor harness",
+                "Bay 5",
+                "LOW",
+                "OPEN",
+                3,
+                1_760_401_800_000
+            ),
+            WorkOrderDto(
+                "wo-105",
+                "Oil bay drain pan swap",
+                "Bay 4",
+                "MEDIUM",
+                "DONE",
+                4,
+                1_760_402_400_000
+            ),
+            WorkOrderDto(
+                "wo-106",
+                "Compressor belt inspection",
+                "Yard",
+                "LOW",
+                "OPEN",
+                1,
+                1_760_403_000_000
+            ),
         )
     }
 }

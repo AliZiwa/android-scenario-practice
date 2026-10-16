@@ -26,7 +26,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
@@ -105,10 +104,8 @@ private fun WorkOrderRow(order: WorkOrder, onClick: () -> Unit) {
             style = MaterialTheme.typography.labelSmall,
         )
         if (order.isPending) {
-            // Pending sync
-            Spacer(Modifier.height(8.dp))
-            Text("Pending Sync", color = Color.Red)
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(4.dp))
+            Text("Pending sync", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
         }
     }
 }

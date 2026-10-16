@@ -20,6 +20,12 @@ data class WorkOrderDto(
     val updatedAt: Long,
 )
 
+@Serializable
+data class StatusPatchDto(
+    val status: String,
+    val version: Int,
+)
+
 interface WorkOrdersApi {
 
     /** GET /work-orders: every work order assigned to this technician. */
@@ -30,13 +36,6 @@ interface WorkOrdersApi {
     @PATCH("work-orders/{id}")
     suspend fun updateWorkOrderStatus(
         @Path("id") id: String,
-        @Body body: WorkOrderDto,
+        @Body body: StatusPatchDto,
     ): WorkOrderDto
-}
-
-internal enum class ResponseCodes(val code: Int, val message: String) {
-    OK(200, "OK"),
-    BAD_REQUEST(400, "Bad Request"),
-    NOT_FOUND(404, "Not Found"),
-    CONFLICT(409, "Conflict");
 }

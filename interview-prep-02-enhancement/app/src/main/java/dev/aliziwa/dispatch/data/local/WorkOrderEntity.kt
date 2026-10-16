@@ -1,5 +1,6 @@
 package dev.aliziwa.dispatch.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import dev.aliziwa.dispatch.domain.Priority
@@ -15,7 +16,7 @@ data class WorkOrderEntity(
     val status: String,
     val version: Int,
     val updatedAt: Long,
-    val isPending: Boolean = false,
+    @ColumnInfo(defaultValue = "0") val isPending: Boolean = false,
 )
 
 fun WorkOrderEntity.toDomain(): WorkOrder = WorkOrder(

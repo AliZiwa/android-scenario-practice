@@ -13,8 +13,10 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import okhttp3.mockwebserver.SocketPolicy
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import retrofit2.Retrofit
@@ -22,7 +24,6 @@ import retrofit2.converter.kotlinx.serialization.asConverterFactory
 
 /**
  * Repository tests against a real Retrofit stack and a MockWebServer. The DAO is in-memory.
- * Extend this file for the PATCH paths: success, IOException, 409, 400.
  */
 class DefaultWorkOrdersRepositoryTest {
 
@@ -87,30 +88,6 @@ class DefaultWorkOrdersRepositoryTest {
         assertEquals(Status.IN_PROGRESS, order.status)
     }
 
-    private fun jsonResponse(code: Int, body: String): MockResponse =
-        MockResponse()
-            .setResponseCode(code)
-            .setHeader("Content-Type", "application/json")
-            .setBody(body)
-
-    private fun entity(
-        id: String,
-        priority: String = "HIGH",
-        status: String = "OPEN",
-        version: Int = 1,
-        updatedAt: Long = 0,
-        isPending: Boolean = false,
-    ) = WorkOrderEntity(
-        id = id,
-        title = "Title $id",
-        site = "Bay 1",
-        priority = priority,
-        status = status,
-        version = version,
-        updatedAt = updatedAt,
-        isPending = isPending,
-    )
-
     @Test
     fun `updateWorkOrderStatus PATCH 200 success updates DAO with server response and clears pending`() = runTest {
         dao.upsert(entity("wo-101", status = "OPEN", version = 1))
@@ -129,11 +106,14 @@ class DefaultWorkOrdersRepositoryTest {
             updatedAt = 0,
             isPending = true,
         )
-        repository.updateWorkOrderStatus(order)
+        val result = repository.updateWorkOrderStatus(order)
+
+        assertEquals(UpdateWorkOrderResult.Applied, result)
 
         val request = server.takeRequest()
         assertEquals("PATCH", request.method)
         assertEquals("/work-orders/wo-101", request.path)
+        assertTrue(request.body.readUtf8().contains(""""status":"IN_PROGRESS""""))
 
         val cached = dao.getByIdOnce("wo-101")!!
         assertEquals("IN_PROGRESS", cached.status)
@@ -142,9 +122,9 @@ class DefaultWorkOrdersRepositoryTest {
     }
 
     @Test
-    fun `updateWorkOrderStatus PATCH IOException keeps local change marked as pending`() = runTest {
+    fun `updateWorkOrderStatus PATCH IOException returns Pending and keeps local change marked as pending`() = runTest {
         dao.upsert(entity("wo-101", status = "OPEN", version = 1))
-        server.shutdown()
+        server.enqueue(MockResponse().setSocketPolicy(SocketPolicy.DISCONNECT_AT_START))
 
         val order = WorkOrder(
             id = "wo-101",
@@ -157,11 +137,9 @@ class DefaultWorkOrdersRepositoryTest {
             isPending = true,
         )
 
-        try {
-            repository.updateWorkOrderStatus(order)
-        } catch (_: Exception) {
-            // Expected network failure
-        }
+        val result = repository.updateWorkOrderStatus(order)
+
+        assertEquals(UpdateWorkOrderResult.Pending, result)
 
         val cached = dao.getByIdOnce("wo-101")!!
         assertEquals("IN_PROGRESS", cached.status)
@@ -186,7 +164,9 @@ class DefaultWorkOrdersRepositoryTest {
             updatedAt = 0,
             isPending = true,
         )
-        repository.updateWorkOrderStatus(order)
+        val result = repository.updateWorkOrderStatus(order)
+
+        assertEquals(UpdateWorkOrderResult.Conflict, result)
 
         val cached = dao.getByIdOnce("wo-101")!!
         assertEquals("DONE", cached.status)
@@ -210,7 +190,9 @@ class DefaultWorkOrdersRepositoryTest {
             updatedAt = 0,
             isPending = true,
         )
-        repository.updateWorkOrderStatus(order)
+        val result = repository.updateWorkOrderStatus(order)
+
+        assertEquals(UpdateWorkOrderResult.Rejected("invalid_transition"), result)
 
         val cached = dao.getByIdOnce("wo-101")!!
         assertEquals("OPEN", cached.status)
@@ -242,11 +224,9 @@ class DefaultWorkOrdersRepositoryTest {
     }
 
     @Test
-    fun `refresh does not discard a pending change if sync fails`() = runTest {
+    fun `refresh does not discard a pending change when network error occurs during retry`() = runTest {
         dao.upsert(entity("wo-101", status = "IN_PROGRESS", version = 1, isPending = true))
-        // PATCH fails with 500 or error
-        server.enqueue(jsonResponse(500, """{"error":"server error"}"""))
-        // GET returns list
+        server.enqueue(MockResponse().setSocketPolicy(SocketPolicy.DISCONNECT_AT_START))
         server.enqueue(jsonResponse(200, TWO_ORDERS))
 
         repository.refresh()
@@ -255,6 +235,30 @@ class DefaultWorkOrdersRepositoryTest {
         assertEquals("IN_PROGRESS", cached.status)
         assertEquals(true, cached.isPending)
     }
+
+    private fun jsonResponse(code: Int, body: String): MockResponse =
+        MockResponse()
+            .setResponseCode(code)
+            .setHeader("Content-Type", "application/json")
+            .setBody(body)
+
+    private fun entity(
+        id: String,
+        priority: String = "HIGH",
+        status: String = "OPEN",
+        version: Int = 1,
+        updatedAt: Long = 0,
+        isPending: Boolean = false,
+    ) = WorkOrderEntity(
+        id = id,
+        title = "Title $id",
+        site = "Bay 1",
+        priority = priority,
+        status = status,
+        version = version,
+        updatedAt = updatedAt,
+        isPending = isPending,
+    )
 
     private companion object {
         val TWO_ORDERS = """

@@ -1,6 +1,5 @@
 package dev.aliziwa.dispatch.ui.detail
 
-import android.R
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,7 +20,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
@@ -48,7 +46,8 @@ fun WorkOrderDetailScreen(
         },
     )
     val state by viewModel.uiState.collectAsState()
-    val order = (state as? WorkOrderDetailUiState.Loaded)?.workOrder
+    val loadedState = state as? WorkOrderDetailUiState.Loaded
+    val order = loadedState?.workOrder
 
     LaunchedEffect(state) {
         if (state is WorkOrderDetailUiState.Gone) onBack()
@@ -79,12 +78,22 @@ fun WorkOrderDetailScreen(
                 Text("Server version ${order.version}", style = MaterialTheme.typography.labelSmall)
 
                 if (order.isPending) {
-                    // Pending sync
                     Spacer(Modifier.height(8.dp))
-                    Text("Pending Sync", color = Color.Red)
-                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "Pending sync",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
 
+                if (loadedState?.message != null) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        loadedState.message,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
 
                 Spacer(Modifier.height(24.dp))
                 Row(
@@ -93,7 +102,8 @@ fun WorkOrderDetailScreen(
                     val currentStatus = order.status
                     Button(
                         enabled = currentStatus == Status.OPEN,
-                        onClick = { viewModel.updateStatus() }) {
+                        onClick = { viewModel.updateStatus() }
+                    ) {
                         Text("Start")
                     }
                     Spacer(Modifier.width(24.dp))

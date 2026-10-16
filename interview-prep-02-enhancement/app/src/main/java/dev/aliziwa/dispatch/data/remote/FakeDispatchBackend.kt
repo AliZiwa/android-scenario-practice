@@ -43,7 +43,7 @@ class FakeDispatchBackend(
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         Thread.sleep(latencyMs)
-        if (offline.value) return respond(request, ResponseCodes.NOT_FOUND.code, """{"error":"not_found"}""")
+        if (offline.value) throw IOException("Simulated offline: no route to dispatch.example")
 
         val path = request.url.encodedPath
         val itemId = ITEM_PATH.matchEntire(path)?.groupValues?.get(1)
@@ -52,22 +52,16 @@ class FakeDispatchBackend(
                 request.method == "GET" && path == "/work-orders" -> serveList(request)
                 request.method == "GET" && itemId != null -> serveItem(request, itemId)
                 request.method == "PATCH" && itemId != null -> servePatch(request, itemId)
-                else -> respond(request, ResponseCodes.NOT_FOUND.code, """{"error":"not_found"}""")
+                else -> respond(request, 404, """{"error":"not_found"}""")
             }
         }
     }
 
     private fun serveList(request: Request): Response {
-        val body =
-            json.encodeToString(
-                serializer = ListSerializer(
-                    elementSerializer = WorkOrderDto.serializer()
-                ),
-                value = store.values.toList()
-            )
+        val body = json.encodeToString(ListSerializer(WorkOrderDto.serializer()), store.values.toList())
         listsServed++
         if (listsServed == 1) dispatcherEditsFromTheOffice()
-        return respond(request, ResponseCodes.OK.code, body)
+        return respond(request, 200, body)
     }
 
     private fun serveItem(request: Request, id: String): Response {

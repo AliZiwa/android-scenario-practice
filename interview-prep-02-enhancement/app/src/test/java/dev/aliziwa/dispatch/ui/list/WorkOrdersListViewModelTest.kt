@@ -65,7 +65,7 @@ class WorkOrdersListViewModelTest {
         assertNull(viewModel.uiState.value.error)
     }
 
-    private fun order(id: String) = WorkOrder(
+    private fun order(id: String, isPending: Boolean = false) = WorkOrder(
         id = id,
         title = "Title $id",
         site = "Bay 1",
@@ -73,5 +73,6 @@ class WorkOrdersListViewModelTest {
         status = Status.OPEN,
         version = 1,
         updatedAt = 0,
+        isPending = isPending,
     )
 }

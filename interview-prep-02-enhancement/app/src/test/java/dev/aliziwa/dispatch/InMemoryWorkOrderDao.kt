@@ -41,4 +41,7 @@ class InMemoryWorkOrderDao : WorkOrderDao() {
     override suspend fun replaceAll(entities: List<WorkOrderEntity>) {
         rows.value = entities.associateBy { it.id }
     }
+
+    override suspend fun getAllPending(): List<WorkOrderEntity> =
+        rows.value.values.filter { it.isPending }
 }

@@ -39,7 +39,9 @@ class AppContainer(context: Context) {
         context.applicationContext,
         DispatchDatabase::class.java,
         "dispatch.db",
-    ).build()
+    )
+        .fallbackToDestructiveMigration(dropAllTables = true)
+        .build()
 
     val repository: WorkOrdersRepository = DefaultWorkOrdersRepository(
         dao = database.workOrderDao(),

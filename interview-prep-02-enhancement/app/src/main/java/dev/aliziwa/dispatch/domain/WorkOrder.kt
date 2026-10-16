@@ -16,4 +16,5 @@ data class WorkOrder(
     val status: Status,
     val version: Int,
     val updatedAt: Long,
+    val isPending: Boolean
 )

@@ -15,6 +15,7 @@ data class WorkOrderEntity(
     val status: String,
     val version: Int,
     val updatedAt: Long,
+    val isPending: Boolean = false,
 )
 
 fun WorkOrderEntity.toDomain(): WorkOrder = WorkOrder(
@@ -25,6 +26,7 @@ fun WorkOrderEntity.toDomain(): WorkOrder = WorkOrder(
     status = Status.valueOf(status),
     version = version,
     updatedAt = updatedAt,
+    isPending = isPending,
 )
 
 fun WorkOrder.toEntity(): WorkOrderEntity = WorkOrderEntity(
@@ -35,4 +37,5 @@ fun WorkOrder.toEntity(): WorkOrderEntity = WorkOrderEntity(
     status = status.name,
     version = version,
     updatedAt = updatedAt,
+    isPending = isPending,
 )

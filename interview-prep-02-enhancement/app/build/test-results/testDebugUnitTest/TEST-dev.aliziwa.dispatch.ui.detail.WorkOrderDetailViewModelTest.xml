@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="dev.aliziwa.dispatch.ui.detail.WorkOrderDetailViewModelTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-10-16T18:03:47.406Z" hostname="Alis-MBP.lan" time="0.02">
+  <properties/>
+  <testcase name="updateStatus when IN_PROGRESS updates status to DONE optimistically with pending sync" classname="dev.aliziwa.dispatch.ui.detail.WorkOrderDetailViewModelTest" time="0.014"/>
+  <testcase name="updateStatus when OPEN updates status to IN_PROGRESS optimistically with pending sync" classname="dev.aliziwa.dispatch.ui.detail.WorkOrderDetailViewModelTest" time="0.002"/>
+  <testcase name="loads work order detail successfully" classname="dev.aliziwa.dispatch.ui.detail.WorkOrderDetailViewModelTest" time="0.001"/>
+  <testcase name="updateStatus when DONE does nothing" classname="dev.aliziwa.dispatch.ui.detail.WorkOrderDetailViewModelTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

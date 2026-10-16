@@ -1,0 +1,176 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="dev.aliziwa.dispatch"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+7-->INJECTED
+8        android:minSdkVersion="26"
+8-->INJECTED
+9        android:targetSdkVersion="37" />
+9-->INJECTED
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->/Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/src/main/AndroidManifest.xml:4:5-67
+11-->/Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/src/main/AndroidManifest.xml:4:22-64
+12
+13    <permission
+13-->[androidx.core:core:1.19.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/f24dbf1a250251c05fd9a1bb40a5a641/transformed/core-1.19.0/AndroidManifest.xml:22:5-24:47
+14        android:name="dev.aliziwa.dispatch.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+14-->[androidx.core:core:1.19.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/f24dbf1a250251c05fd9a1bb40a5a641/transformed/core-1.19.0/AndroidManifest.xml:23:9-81
+15        android:protectionLevel="signature" />
+15-->[androidx.core:core:1.19.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/f24dbf1a250251c05fd9a1bb40a5a641/transformed/core-1.19.0/AndroidManifest.xml:24:9-44
+16
+17    <uses-permission android:name="dev.aliziwa.dispatch.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+17-->[androidx.core:core:1.19.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/f24dbf1a250251c05fd9a1bb40a5a641/transformed/core-1.19.0/AndroidManifest.xml:26:5-97
+17-->[androidx.core:core:1.19.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/f24dbf1a250251c05fd9a1bb40a5a641/transformed/core-1.19.0/AndroidManifest.xml:26:22-94
+18
+19    <application
+19-->/Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/src/main/AndroidManifest.xml:6:5-21:19
+20        android:name="dev.aliziwa.dispatch.DispatchApp"
+20-->/Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/src/main/AndroidManifest.xml:7:9-36
+21        android:allowBackup="false"
+21-->/Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/src/main/AndroidManifest.xml:8:9-36
+22        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+22-->[androidx.core:core:1.19.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/f24dbf1a250251c05fd9a1bb40a5a641/transformed/core-1.19.0/AndroidManifest.xml:28:18-86
+23        android:debuggable="true"
+24        android:extractNativeLibs="false"
+24-->INJECTED
+25        android:icon="@android:drawable/sym_def_app_icon"
+25-->/Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/src/main/AndroidManifest.xml:9:9-58
+26        android:label="@string/app_name"
+26-->/Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/src/main/AndroidManifest.xml:10:9-41
+27        android:supportsRtl="true"
+27-->/Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/src/main/AndroidManifest.xml:11:9-35
+28        android:theme="@style/Theme.Dispatch" >
+28-->/Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/src/main/AndroidManifest.xml:12:9-46
+29        <activity
+29-->/Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/src/main/AndroidManifest.xml:13:9-20:20
+30            android:name="dev.aliziwa.dispatch.ui.MainActivity"
+30-->/Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/src/main/AndroidManifest.xml:14:13-44
+31            android:exported="true" >
+31-->/Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/src/main/AndroidManifest.xml:15:13-36
+32            <intent-filter>
+32-->/Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/src/main/AndroidManifest.xml:16:13-19:29
+33                <action android:name="android.intent.action.MAIN" />
+33-->/Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/src/main/AndroidManifest.xml:17:17-69
+33-->/Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/src/main/AndroidManifest.xml:17:25-66
+34
+35                <category android:name="android.intent.category.LAUNCHER" />
+35-->/Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/src/main/AndroidManifest.xml:18:17-77
+35-->/Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/src/main/AndroidManifest.xml:18:27-74
+36            </intent-filter>
+37        </activity>
+38        <activity
+38-->[androidx.compose.ui:ui-tooling-android:1.12.1] /Users/aliziwa/.gradle/caches/9.6.0/transforms/8587491f13f7ab9b94dac404b834a8e2/transformed/ui-tooling/AndroidManifest.xml:23:9-25:39
+39            android:name="androidx.compose.ui.tooling.PreviewActivity"
+39-->[androidx.compose.ui:ui-tooling-android:1.12.1] /Users/aliziwa/.gradle/caches/9.6.0/transforms/8587491f13f7ab9b94dac404b834a8e2/transformed/ui-tooling/AndroidManifest.xml:24:13-71
+40            android:exported="true" />
+40-->[androidx.compose.ui:ui-tooling-android:1.12.1] /Users/aliziwa/.gradle/caches/9.6.0/transforms/8587491f13f7ab9b94dac404b834a8e2/transformed/ui-tooling/AndroidManifest.xml:25:13-36
+41
+42        <uses-library
+42-->[androidx.window:window:1.5.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/40e9d2d7f5d4e4d8d021c5ac30417645/transformed/window-1.5.0/AndroidManifest.xml:23:9-25:40
+43            android:name="androidx.window.extensions"
+43-->[androidx.window:window:1.5.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/40e9d2d7f5d4e4d8d021c5ac30417645/transformed/window-1.5.0/AndroidManifest.xml:24:13-54
+44            android:required="false" />
+44-->[androidx.window:window:1.5.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/40e9d2d7f5d4e4d8d021c5ac30417645/transformed/window-1.5.0/AndroidManifest.xml:25:13-37
+45        <uses-library
+45-->[androidx.window:window:1.5.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/40e9d2d7f5d4e4d8d021c5ac30417645/transformed/window-1.5.0/AndroidManifest.xml:26:9-28:40
+46            android:name="androidx.window.sidecar"
+46-->[androidx.window:window:1.5.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/40e9d2d7f5d4e4d8d021c5ac30417645/transformed/window-1.5.0/AndroidManifest.xml:27:13-51
+47            android:required="false" />
+47-->[androidx.window:window:1.5.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/40e9d2d7f5d4e4d8d021c5ac30417645/transformed/window-1.5.0/AndroidManifest.xml:28:13-37
+48
+49        <provider
+49-->[androidx.emoji2:emoji2:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/db17ede66d79e4d1c6f093506c25a3b2/transformed/emoji2-1.4.0/AndroidManifest.xml:24:9-32:20
+50            android:name="androidx.startup.InitializationProvider"
+50-->[androidx.emoji2:emoji2:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/db17ede66d79e4d1c6f093506c25a3b2/transformed/emoji2-1.4.0/AndroidManifest.xml:25:13-67
+51            android:authorities="dev.aliziwa.dispatch.androidx-startup"
+51-->[androidx.emoji2:emoji2:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/db17ede66d79e4d1c6f093506c25a3b2/transformed/emoji2-1.4.0/AndroidManifest.xml:26:13-68
+52            android:exported="false" >
+52-->[androidx.emoji2:emoji2:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/db17ede66d79e4d1c6f093506c25a3b2/transformed/emoji2-1.4.0/AndroidManifest.xml:27:13-37
+53            <meta-data
+53-->[androidx.emoji2:emoji2:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/db17ede66d79e4d1c6f093506c25a3b2/transformed/emoji2-1.4.0/AndroidManifest.xml:29:13-31:52
+54                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+54-->[androidx.emoji2:emoji2:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/db17ede66d79e4d1c6f093506c25a3b2/transformed/emoji2-1.4.0/AndroidManifest.xml:30:17-75
+55                android:value="androidx.startup" />
+55-->[androidx.emoji2:emoji2:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/db17ede66d79e4d1c6f093506c25a3b2/transformed/emoji2-1.4.0/AndroidManifest.xml:31:17-49
+56            <meta-data
+56-->[androidx.lifecycle:lifecycle-process:2.11.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/e279df2e336a25a193dab8f455e51d36/transformed/lifecycle-process-2.11.0/AndroidManifest.xml:29:13-31:52
+57                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+57-->[androidx.lifecycle:lifecycle-process:2.11.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/e279df2e336a25a193dab8f455e51d36/transformed/lifecycle-process-2.11.0/AndroidManifest.xml:30:17-78
+58                android:value="androidx.startup" />
+58-->[androidx.lifecycle:lifecycle-process:2.11.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/e279df2e336a25a193dab8f455e51d36/transformed/lifecycle-process-2.11.0/AndroidManifest.xml:31:17-49
+59            <meta-data
+59-->[com.squareup.okhttp3:okhttp-android:5.5.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/ffb7f14bf38dcd8a14630ab5cdb1ac3a/transformed/okhttp/AndroidManifest.xml:16:13-18:52
+60                android:name="okhttp3.internal.platform.PlatformInitializer"
+60-->[com.squareup.okhttp3:okhttp-android:5.5.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/ffb7f14bf38dcd8a14630ab5cdb1ac3a/transformed/okhttp/AndroidManifest.xml:17:17-77
+61                android:value="androidx.startup" />
+61-->[com.squareup.okhttp3:okhttp-android:5.5.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/ffb7f14bf38dcd8a14630ab5cdb1ac3a/transformed/okhttp/AndroidManifest.xml:18:17-49
+62            <meta-data
+62-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:29:13-31:52
+63                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+63-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:30:17-85
+64                android:value="androidx.startup" />
+64-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:31:17-49
+65        </provider>
+66
+67        <activity
+67-->[androidx.compose.ui:ui-test-manifest:1.12.1] /Users/aliziwa/.gradle/caches/9.6.0/transforms/58ae535f1608965c9a5419db842165e2/transformed/ui-test-manifest-1.12.1/AndroidManifest.xml:23:9-26:79
+68            android:name="androidx.activity.ComponentActivity"
+68-->[androidx.compose.ui:ui-test-manifest:1.12.1] /Users/aliziwa/.gradle/caches/9.6.0/transforms/58ae535f1608965c9a5419db842165e2/transformed/ui-test-manifest-1.12.1/AndroidManifest.xml:24:13-63
+69            android:exported="true"
+69-->[androidx.compose.ui:ui-test-manifest:1.12.1] /Users/aliziwa/.gradle/caches/9.6.0/transforms/58ae535f1608965c9a5419db842165e2/transformed/ui-test-manifest-1.12.1/AndroidManifest.xml:25:13-36
+70            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+70-->[androidx.compose.ui:ui-test-manifest:1.12.1] /Users/aliziwa/.gradle/caches/9.6.0/transforms/58ae535f1608965c9a5419db842165e2/transformed/ui-test-manifest-1.12.1/AndroidManifest.xml:26:13-76
+71
+72        <service
+72-->[androidx.room:room-runtime-android:2.8.5] /Users/aliziwa/.gradle/caches/9.6.0/transforms/6cd95ac3c032cdce7d275d5d8193b300/transformed/room-runtime/AndroidManifest.xml:24:9-28:63
+73            android:name="androidx.room.MultiInstanceInvalidationService"
+73-->[androidx.room:room-runtime-android:2.8.5] /Users/aliziwa/.gradle/caches/9.6.0/transforms/6cd95ac3c032cdce7d275d5d8193b300/transformed/room-runtime/AndroidManifest.xml:25:13-74
+74            android:directBootAware="true"
+74-->[androidx.room:room-runtime-android:2.8.5] /Users/aliziwa/.gradle/caches/9.6.0/transforms/6cd95ac3c032cdce7d275d5d8193b300/transformed/room-runtime/AndroidManifest.xml:26:13-43
+75            android:exported="false" />
+75-->[androidx.room:room-runtime-android:2.8.5] /Users/aliziwa/.gradle/caches/9.6.0/transforms/6cd95ac3c032cdce7d275d5d8193b300/transformed/room-runtime/AndroidManifest.xml:27:13-37
+76
+77        <receiver
+77-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:34:9-52:20
+78            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+78-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:35:13-76
+79            android:directBootAware="false"
+79-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:36:13-44
+80            android:enabled="true"
+80-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:37:13-35
+81            android:exported="true"
+81-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:38:13-36
+82            android:permission="android.permission.DUMP" >
+82-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:39:13-57
+83            <intent-filter>
+83-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:40:13-42:29
+84                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+84-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:41:17-91
+84-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:41:25-88
+85            </intent-filter>
+86            <intent-filter>
+86-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:43:13-45:29
+87                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+87-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:44:17-85
+87-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:44:25-82
+88            </intent-filter>
+89            <intent-filter>
+89-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:46:13-48:29
+90                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+90-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:47:17-88
+90-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:47:25-85
+91            </intent-filter>
+92            <intent-filter>
+92-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:49:13-51:29
+93                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+93-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:50:17-95
+93-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aliziwa/.gradle/caches/9.6.0/transforms/aa2ac7b6a35a3f3d18263b54659841ce/transformed/profileinstaller-1.4.0/AndroidManifest.xml:50:25-92
+94            </intent-filter>
+95        </receiver>
+96    </application>
+97
+98</manifest>

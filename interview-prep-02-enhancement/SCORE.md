@@ -1,5 +1,28 @@
 # Assignment 02: Enhancement, score
 
+## Round 2 (commit cc2b23b): 21 / 25. Pass.
+
+| Dimension | R1 | R2 | Why |
+|---|---|---|---|
+| Correctness | 2 | 4 | All eight criteria now met: `AutoMigration(from = 1, to = 2)` with `defaultValue`, no fallback, `3.json` gone; `IOException` returns `Pending` instead of escaping; `StatusPatchDto` matches the contract; conflict and rejection messages reach the screen; backend restored; toolchain file deleted; the merge keeps pending rows the server dropped. Not a 5 because of one realistic path: offline, tap Start then Complete. The second write overwrites the first in Room (`DONE`, still version 1). On refresh the retry gets 400 for OPEN to DONE, the rollback clears pending, the merge takes the server's `OPEN`, and both taps vanish with no message, because `refresh()` discards the `Rejected` outcome. Disabling the buttons while `isPending` is true, or refusing a second transition on a pending row in the repository, closes it. |
+| Architecture and boundaries | 3 | 4 | `UpdateWorkOrderResult` is the right seam: the ViewModel maps outcomes to a message and never sees an HTTP code. `Status.next()` in the domain is the single transition table. `CancellationException` rethrown. Left: the ViewModel still sets `isPending = true` on the copy it hands down (the repository overwrites it, so it is dead code with a message), and `refresh()` swallows every retry outcome, so a rejected retry is invisible to the user. |
+| Code quality and idiom | 2 | 4 | Dead imports, `ResponseCodes`, `Color.Red` and the no-op rethrow are gone; Material colours and typography used; `runCatching` around the error-body parse with a sane default. Left: the round-1 reformatting of `SEED` and the encode calls in `FakeDispatchBackend` is still in the diff (77 lines of noise in a file that should show no behaviour change), and the `.gitignore` rewrite. |
+| Tests | 3 | 5 | Every PATCH outcome asserted on both the typed result and the Room row; `IOException` produced with `SocketPolicy.DISCONNECT_AT_START` rather than a shutdown; pending-survives-refresh now fails the retry with a real `IOException`; the request body is asserted; ViewModel tests for the conflict and rejection messages; `MigrationTest` inserts a version 1 row and reads it back at version 2 with `isPending = 0`. What would still be worth adding: the merge branch that keeps a pending row the server no longer returns, and the Start-then-Complete-offline sequence above, which would have caught the gap. |
+| Communication | 2 | 4 | `DESIGN.md` now describes the code: the migration as built, the `Mutex` answer corrected with the exact interleaving, and question 3 has the two-line client fix (409 whose body already carries the target status is `Applied`). Round 2 commit message names every change. Still: a "Fix PR score changes." commit six seconds before it with nothing to say, and the PR body is "Fixing enhancement issues". |
+
+## What a 23 to 24 would have added
+
+- Buttons disabled while `isPending`, or the repository refusing a second transition on a pending row, with the test for the offline double tap.
+- The two-line 409 idempotency fix you described in `DESIGN.md`, since it costs nothing and you already know it.
+- Revert the formatting-only churn in `FakeDispatchBackend` so the diff shows what changed.
+- A PR description that says what to look at first.
+
+## Interview notes
+
+Be ready for INTERVIEW.md questions 6, 12 and 14 in particular: what a 500 does to a row under your `else -> Pending`, what the refresh-versus-tap interleaving does to Room now that you have named it, and why a 409 whose body matches your target status is not a conflict. Those three are the ones that separate "handled the codes" from "owns the data model".
+
+---
+
 ## Round 1 (commit 93b7ea0): 12 / 25. Below the pass line (20).
 
 The optimistic write, the 200 and 409 data paths, and the retry-then-merge refresh are the right shape and are tested against MockWebServer. What sinks this round is criterion 7 (there is no migration; the app drops the table), criterion 8 (the backend you were told not to touch was changed so the Offline switch no longer goes offline), and a crash path on the one failure the feature exists for. `DESIGN.md` describes a migration that is not in the diff.

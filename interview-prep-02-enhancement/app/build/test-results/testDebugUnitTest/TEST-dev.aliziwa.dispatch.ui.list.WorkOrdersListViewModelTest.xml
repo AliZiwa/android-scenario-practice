@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="dev.aliziwa.dispatch.ui.list.WorkOrdersListViewModelTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-16T18:03:47.426Z" hostname="Alis-MBP.lan" time="0.003">
-  <properties/>
-  <testcase name="offline refresh keeps the cached list and shows an error" classname="dev.aliziwa.dispatch.ui.list.WorkOrdersListViewModelTest" time="0.002"/>
-  <testcase name="refreshes once on creation and reports the count" classname="dev.aliziwa.dispatch.ui.list.WorkOrdersListViewModelTest" time="0.0"/>
-  <testcase name="a refresh in flight blocks a second one" classname="dev.aliziwa.dispatch.ui.list.WorkOrdersListViewModelTest" time="0.001"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

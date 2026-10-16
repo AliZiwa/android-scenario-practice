@@ -1,3 +1,0 @@
-dev.aliziwa.dispatch
-string app_name
-style Theme_Dispatch

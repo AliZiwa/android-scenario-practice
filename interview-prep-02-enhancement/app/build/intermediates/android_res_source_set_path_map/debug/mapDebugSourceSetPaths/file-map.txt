@@ -1,8 +1,0 @@
-dev.aliziwa.dispatch.app-pngs-0 /Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/build/generated/res/pngs/debug
-dev.aliziwa.dispatch.app-updated_navigation_xml-1 /Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/build/generated/updated_navigation_xml/debug
-dev.aliziwa.dispatch.app-packageDebugResources-2 /Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/build/intermediates/incremental/debug/packageDebugResources/merged.dir
-dev.aliziwa.dispatch.app-packageDebugResources-3 /Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/build/intermediates/incremental/debug/packageDebugResources/stripped.dir
-dev.aliziwa.dispatch.app-debug-4 /Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/build/intermediates/merged_res/debug/mergeDebugResources
-dev.aliziwa.dispatch.app-debug-5 /Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/src/debug/res
-dev.aliziwa.dispatch.app-main-6 /Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-02-enhancement/app/src/main/res
-gradleHome-0 /Users/aliziwa/.gradle

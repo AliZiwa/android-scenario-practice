@@ -1,0 +1,8 @@
+dev.aliziwa.timesheet.app-pngs-0 /Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-03-code-smells/app/build/generated/res/pngs/debug
+dev.aliziwa.timesheet.app-updated_navigation_xml-1 /Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-03-code-smells/app/build/generated/updated_navigation_xml/debug
+dev.aliziwa.timesheet.app-packageDebugResources-2 /Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-03-code-smells/app/build/intermediates/incremental/debug/packageDebugResources/merged.dir
+dev.aliziwa.timesheet.app-packageDebugResources-3 /Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-03-code-smells/app/build/intermediates/incremental/debug/packageDebugResources/stripped.dir
+dev.aliziwa.timesheet.app-debug-4 /Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-03-code-smells/app/build/intermediates/merged_res/debug/mergeDebugResources
+dev.aliziwa.timesheet.app-debug-5 /Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-03-code-smells/app/src/debug/res
+dev.aliziwa.timesheet.app-main-6 /Users/aliziwa/Documents/personal/android-scenario-practice/interview-prep-03-code-smells/app/src/main/res
+gradleHome-0 /Users/aliziwa/.gradle

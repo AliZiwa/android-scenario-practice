@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="dev.aliziwa.timesheet.data.ShiftRepositoryTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-26T20:13:35.084Z" hostname="Alis-MBP.lan" time="0.006">
+  <properties/>
+  <testcase name="save updates existing shift when ID is non-zero" classname="dev.aliziwa.timesheet.data.ShiftRepositoryTest" time="0.001"/>
+  <testcase name="getShifts fetches all shifts from DAO" classname="dev.aliziwa.timesheet.data.ShiftRepositoryTest" time="0.001"/>
+  <testcase name="delete removes shift by ID" classname="dev.aliziwa.timesheet.data.ShiftRepositoryTest" time="0.0"/>
+  <testcase name="submit returns Success and updates DAO on successful response" classname="dev.aliziwa.timesheet.data.ShiftRepositoryTest" time="0.0"/>
+  <testcase name="save inserts new shift when ID is 0" classname="dev.aliziwa.timesheet.data.ShiftRepositoryTest" time="0.0"/>
+  <testcase name="submit returns Failure on API exception" classname="dev.aliziwa.timesheet.data.ShiftRepositoryTest" time="0.001"/>
+  <testcase name="submitAllDrafts submits all draft shifts in parallel" classname="dev.aliziwa.timesheet.data.ShiftRepositoryTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="dev.aliziwa.timesheet.TimesheetViewModelTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-10-26T20:13:34.992Z" hostname="Alis-MBP.lan" time="0.09">
+  <properties/>
+  <testcase name="submitAll submits all draft shifts and updates message" classname="dev.aliziwa.timesheet.TimesheetViewModelTest" time="0.057"/>
+  <testcase name="createShift validates end time must be after start time" classname="dev.aliziwa.timesheet.TimesheetViewModelTest" time="0.002"/>
+  <testcase name="createShift validates work order required" classname="dev.aliziwa.timesheet.TimesheetViewModelTest" time="0.001"/>
+  <testcase name="createShift validates bad date" classname="dev.aliziwa.timesheet.TimesheetViewModelTest" time="0.002"/>
+  <testcase name="clearMessage clears the current message in uiState" classname="dev.aliziwa.timesheet.TimesheetViewModelTest" time="0.001"/>
+  <testcase name="submit updates shift status and server ID on success" classname="dev.aliziwa.timesheet.TimesheetViewModelTest" time="0.002"/>
+  <testcase name="delete removes shift from list" classname="dev.aliziwa.timesheet.TimesheetViewModelTest" time="0.002"/>
+  <testcase name="submit sets message on server failure" classname="dev.aliziwa.timesheet.TimesheetViewModelTest" time="0.018"/>
+  <testcase name="initial load fetches shifts into uiState" classname="dev.aliziwa.timesheet.TimesheetViewModelTest" time="0.001"/>
+  <testcase name="createShift saves valid shift and calculates weekly totals in uiState" classname="dev.aliziwa.timesheet.TimesheetViewModelTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

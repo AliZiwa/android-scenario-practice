@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="dev.aliziwa.timesheet.util.UtilsTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-10-26T20:13:35.091Z" hostname="Alis-MBP.lan" time="0.004">
+  <properties/>
+  <testcase name="isSubmitted returns true for submitted or approved statuses" classname="dev.aliziwa.timesheet.util.UtilsTest" time="0.001"/>
+  <testcase name="parseDate handles valid and invalid date strings" classname="dev.aliziwa.timesheet.util.UtilsTest" time="0.0"/>
+  <testcase name="displayDate formats valid dates and returns raw input for invalid dates" classname="dev.aliziwa.timesheet.util.UtilsTest" time="0.0"/>
+  <testcase name="pay is time and a half past eight hours and zero when unbillable" classname="dev.aliziwa.timesheet.util.UtilsTest" time="0.0"/>
+  <testcase name="fmtMoney formats currency amounts" classname="dev.aliziwa.timesheet.util.UtilsTest" time="0.001"/>
+  <testcase name="statusLabel formats labels properly" classname="dev.aliziwa.timesheet.util.UtilsTest" time="0.0"/>
+  <testcase name="weekStart calculates Monday for given dates" classname="dev.aliziwa.timesheet.util.UtilsTest" time="0.001"/>
+  <testcase name="worked minutes rounds to the nearest quarter hour" classname="dev.aliziwa.timesheet.util.UtilsTest" time="0.0"/>
+  <testcase name="fmtTime formats minutes past midnight" classname="dev.aliziwa.timesheet.util.UtilsTest" time="0.0"/>
+  <testcase name="fmtDuration formats hours and minutes correctly" classname="dev.aliziwa.timesheet.util.UtilsTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

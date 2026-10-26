@@ -3,45 +3,50 @@ package dev.aliziwa.timesheet.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.aliziwa.timesheet.Injector
+import dev.aliziwa.timesheet.data.ShiftRepository
+import dev.aliziwa.timesheet.data.SubmitResult
 import dev.aliziwa.timesheet.data.local.ShiftEntity
 import dev.aliziwa.timesheet.util.Utils
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
-class TimesheetViewModel : ViewModel() {
+data class TimesheetUiState(
+    val shifts: List<ShiftEntity> = emptyList(),
+    val loading: Boolean = false,
+    val message: String? = null,
+    val selectedWeek: String = Utils.weekStart(Utils.today()),
+    val workedMinutes: Int = 0,
+    val overtimeMinutes: Int = 0,
+    val totalPay: Double = 0.0,
+)
 
-    val shifts = MutableStateFlow<MutableList<ShiftEntity>>(mutableListOf())
-    val loading = MutableStateFlow(false)
-    val message = MutableStateFlow<String?>(null)
-    var lastError: String? = null
-    var selectedWeek: String = Utils.weekStart(Utils.today())
-    var data2: List<ShiftEntity> = emptyList() // cache for summary
+class TimesheetViewModel(
+    private val repository: ShiftRepository = Injector.repository,
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(TimesheetUiState())
+    val uiState: StateFlow<TimesheetUiState> = _uiState.asStateFlow()
 
     init {
-        load(false, false)
+        load()
     }
 
-    fun load(forceRefresh: Boolean, silent: Boolean) {
-        if (!silent) loading.value = true
+    fun load() {
+        _uiState.update { it.copy(loading = true) }
         viewModelScope.launch {
             try {
-                val list = if (forceRefresh || data2.isEmpty()) {
-                    Injector.repository.getShifts()
-                } else {
-                    data2
-                }
-                data2 = list
-                shifts.value.clear()
-                shifts.value.addAll(list)
-                shifts.value = shifts.value.toMutableList() // force an emission
-                lastError = null
+                val list = repository.getShifts()
+                updateShifts(list)
             } catch (e: Exception) {
-                lastError = e.message
-                message.value = "Could not load shifts"
+                _uiState.update {
+                    it.copy(message = "Could not load shifts")
+                }
+            } finally {
+                _uiState.update { it.copy(loading = false) }
             }
-            if (!silent) loading.value = false
         }
     }
 
@@ -58,89 +63,103 @@ class TimesheetViewModel : ViewModel() {
         rateOverride: Double?,
     ) {
         if (workOrderId.isBlank()) {
-            message.value = "Work order required"
+            _uiState.update { it.copy(message = "Work order required") }
             return
         }
         if (Utils.parseDate(date) == -1L) {
-            message.value = "Bad date"
+            _uiState.update { it.copy(message = "Bad date") }
             return
         }
-        val s = ShiftEntity()
-        s.workOrderId = workOrderId.trim()
-        s.date = date
-        s.startMinutes = startHour * 60 + startMinute
-        s.endMinutes = endHour * 60 + endMinute
-        s.breakMinutes = breakMinutes
-        s.note = note
-        s.billable = billable
-        s.rateOverride = rateOverride
-        s.status = "draft"
-        if (s.endMinutes <= s.startMinutes) {
-            message.value = "End must be after start"
+        val startMinutes = startHour * 60 + startMinute
+        val endMinutes = endHour * 60 + endMinute
+        if (endMinutes <= startMinutes) {
+            _uiState.update { it.copy(message = "End must be after start") }
             return
         }
+
+        val s = ShiftEntity(
+            workOrderId = workOrderId.trim(),
+            date = date,
+            startMinutes = startMinutes,
+            endMinutes = endMinutes,
+            breakMinutes = breakMinutes,
+            note = note,
+            billable = billable,
+            rateOverride = rateOverride,
+            status = "draft",
+        )
+
         viewModelScope.launch {
-            val id = withContext(Dispatchers.IO) { Injector.repository.save(s) }
+            val id = repository.save(s)
             s.id = id
-            shifts.value.add(0, s)
-            shifts.value = shifts.value.toMutableList() // force an emission
-            data2 = shifts.value.toList()
-            message.value = "Saved"
+            val currentList = _uiState.value.shifts.toMutableList()
+            currentList.add(0, s)
+            updateShifts(currentList)
+            _uiState.update { it.copy(message = "Saved") }
         }
     }
 
     fun submit(shift: ShiftEntity) {
         if (Utils.isSubmitted(shift)) {
-            message.value = "Already submitted"
+            _uiState.update { it.copy(message = "Already submitted") }
             return
         }
-        loading.value = true
+        _uiState.update { it.copy(loading = true) }
         viewModelScope.launch {
-            val ok = Injector.repository.submit(shift)
-            if (ok) {
-                message.value = "Submitted " + shift.serverId
-            } else {
-                message.value = "Submit failed: " + Injector.repository.lastError
+            val result = repository.submit(shift)
+            val msg = when (result) {
+                is SubmitResult.Success -> "Submitted " + result.serverId
+                is SubmitResult.Failure -> "Submit failed: " + result.reason
             }
-            load(true, true)
-            loading.value = false
+            val list = repository.getShifts()
+            updateShifts(list)
+            _uiState.update { it.copy(message = msg, loading = false) }
         }
     }
 
     fun submitAll() {
-        loading.value = true
+        _uiState.update { it.copy(loading = true) }
         viewModelScope.launch {
-            val n = Injector.repository.submitAllDrafts()
-            message.value = "Submitted $n shift(s)"
-            load(true, true)
-            loading.value = false
+            val n = repository.submitAllDrafts()
+            val list = repository.getShifts()
+            updateShifts(list)
+            _uiState.update { it.copy(message = "Submitted $n shift(s)", loading = false) }
         }
     }
 
     fun delete(shift: ShiftEntity) {
         viewModelScope.launch {
-            Injector.repository.delete(shift.id)
-            shifts.value.remove(shift)
-            shifts.value = shifts.value.toMutableList() // force an emission
-            data2 = shifts.value.toList()
+            repository.delete(shift.id)
+            val updated = _uiState.value.shifts.filterNot { it.id == shift.id }
+            updateShifts(updated)
         }
     }
 
-    /** Totals for the selected week: worked minutes, overtime minutes, pay. */
-    fun weekSummary(): Triple<Int, Int, Double> {
+    private fun updateShifts(newList: List<ShiftEntity>) {
+        val week = _uiState.value.selectedWeek
         var worked = 0
         var ot = 0
         var pay = 0.0
         val rate = Utils.rate()
-        for (s in data2) {
-            if (Utils.weekStart(s.date) == selectedWeek) {
+
+        for (s in newList) {
+            if (Utils.weekStart(s.date) == week) {
                 val m = Utils.workedMinutes(s)
                 worked += m
                 if (m > 480) ot += m - 480
                 pay += Utils.calcPay(s, rate)
             }
         }
-        return Triple(worked, ot, Math.round(pay * 100) / 100.0)
+        pay = Math.round(pay * 100) / 100.0
+
+        _uiState.update {
+            it.copy(
+                shifts = newList,
+                workedMinutes = worked,
+                overtimeMinutes = ot,
+                totalPay = pay,
+            )
+        }
     }
 
     fun formatRow(shift: ShiftEntity): String {
@@ -162,6 +181,6 @@ class TimesheetViewModel : ViewModel() {
     }
 
     fun clearMessage() {
-        message.value = null
+        _uiState.update { it.copy(message = null) }
     }
 }

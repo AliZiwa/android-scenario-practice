@@ -1,48 +1,55 @@
 package dev.aliziwa.timesheet.data
 
-import android.content.Context
-import android.util.Log
-import android.widget.Toast
-import dev.aliziwa.timesheet.Injector
+import dev.aliziwa.timesheet.data.local.ShiftDao
 import dev.aliziwa.timesheet.data.local.ShiftEntity
 import dev.aliziwa.timesheet.data.remote.ShiftDto
+import dev.aliziwa.timesheet.data.remote.TimesheetApi
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 
-class ShiftRepository(private val context: Context) {
+sealed interface SubmitResult {
+    data class Success(val serverId: String, val status: String) : SubmitResult
+    data class Failure(val reason: String) : SubmitResult
+}
 
-    var lastError: String? = null
-    var submitCount = 0
+class ShiftRepository(
+    private val dao: ShiftDao,
+    private val api: TimesheetApi,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+) {
 
     suspend fun getShifts(): List<ShiftEntity> {
-        return withContext(Dispatchers.IO) {
-            Injector.db.shiftDao().getAll()
+        return withContext(ioDispatcher) {
+            dao.getAll()
         }
     }
 
     suspend fun save(shift: ShiftEntity): Long {
-        return withContext(Dispatchers.IO) {
+        return withContext(ioDispatcher) {
             if (shift.id == 0L) {
-                Injector.db.shiftDao().insert(shift)
+                dao.insert(shift)
             } else {
-                Injector.db.shiftDao().update(shift)
+                dao.update(shift)
                 shift.id
             }
         }
     }
 
     suspend fun delete(id: Long) {
-        withContext(Dispatchers.IO) {
-            Injector.db.shiftDao().deleteById(id)
+        withContext(ioDispatcher) {
+            dao.deleteById(id)
         }
     }
 
     /**
-     * Submits a shift. Returns true if the server accepted it. On success the shift is updated in place
-     * and saved.
+     * Submits a shift. On success the shift is updated in place and saved in local database.
      */
-    suspend fun submit(shift: ShiftEntity): Boolean {
-        return withContext(Dispatchers.IO) {
+    suspend fun submit(shift: ShiftEntity): SubmitResult {
+        return withContext(ioDispatcher) {
             try {
                 val dto = ShiftDto(
                     shift.workOrderId,
@@ -53,30 +60,29 @@ class ShiftRepository(private val context: Context) {
                     shift.billable,
                     shift.note,
                 )
-                val resp = Injector.api.submit(dto)
+                val resp = api.submit(dto)
                 shift.serverId = resp.serverId
                 shift.status = resp.status
-                Injector.db.shiftDao().update(shift)
-                submitCount++
-                lastError = null
-                true
+                dao.update(shift)
+                SubmitResult.Success(resp.serverId, resp.status)
             } catch (e: Exception) {
-                Log.e("ShiftRepository", "submit failed", e)
-                lastError = e.message
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Submit failed", Toast.LENGTH_SHORT).show()
-                }
-                false
+                SubmitResult.Failure(e.message ?: "Unknown error")
             }
         }
     }
 
-    suspend fun submitAllDrafts(): Int {
-        var n = 0
-        val drafts = withContext(Dispatchers.IO) { Injector.db.shiftDao().getByStatus("draft") }
-        for (d in drafts) {
-            if (submit(d)) n++
+    /**
+     * Submits all draft shifts concurrently to resolve the sequential N+1 bottleneck.
+     */
+    suspend fun submitAllDrafts(): Int = withContext(ioDispatcher) {
+        val drafts = dao.getByStatus("draft")
+        if (drafts.isEmpty()) return@withContext 0
+
+        coroutineScope {
+            val deferreds = drafts.map { draft ->
+                async { submit(draft) is SubmitResult.Success }
+            }
+            deferreds.awaitAll().count { it }
         }
-        return n
     }
 }

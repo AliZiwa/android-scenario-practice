@@ -42,9 +42,7 @@ import java.util.Locale
 @Composable
 fun TimesheetScreen() {
     val vm: TimesheetViewModel = viewModel()
-    val shifts by vm.shifts.collectAsState()
-    val loading by vm.loading.collectAsState()
-    val message by vm.message.collectAsState()
+    val uiState by vm.uiState.collectAsState()
 
     var workOrder by remember { mutableStateOf("") }
     var date by remember { mutableStateOf(Utils.today()) }
@@ -54,21 +52,6 @@ fun TimesheetScreen() {
     var note by remember { mutableStateOf("") }
     var billable by remember { mutableStateOf(true) }
     var showForm by remember { mutableStateOf(false) }
-
-    // Weekly totals for the header
-    var worked = 0
-    var ot = 0
-    var pay = 0.0
-    val rate = Utils.rate()
-    for (s in shifts) {
-        if (Utils.weekStart(s.date) == vm.selectedWeek) {
-            val m = Utils.workedMinutes(s)
-            worked += m
-            if (m > 480) ot += m - 480
-            pay += Utils.calcPay(s, rate)
-        }
-    }
-    pay = Math.round(pay * 100) / 100.0
 
     Scaffold(
         topBar = {
@@ -83,12 +66,14 @@ fun TimesheetScreen() {
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
             Column(Modifier.fillMaxWidth().padding(16.dp)) {
-                Text("Week of " + Utils.displayDate(vm.selectedWeek), style = MaterialTheme.typography.titleMedium)
+                Text("Week of " + Utils.displayDate(uiState.selectedWeek), style = MaterialTheme.typography.titleMedium)
                 Text(
-                    "Worked " + Utils.fmtDuration(worked) + ", overtime " + Utils.fmtDuration(ot) + ", pay " + Utils.fmtMoney(pay),
+                    "Worked " + Utils.fmtDuration(uiState.workedMinutes) +
+                        ", overtime " + Utils.fmtDuration(uiState.overtimeMinutes) +
+                        ", pay " + Utils.fmtMoney(uiState.totalPay),
                     style = MaterialTheme.typography.bodyMedium,
                 )
-                message?.let {
+                uiState.message?.let {
                     Spacer(Modifier.height(4.dp))
                     Text(it, color = MaterialTheme.colorScheme.primary)
                     TextButton(onClick = { vm.clearMessage() }) { Text("Dismiss") }
@@ -139,11 +124,11 @@ fun TimesheetScreen() {
             }
 
             Box(Modifier.fillMaxSize()) {
-                if (loading && shifts.isEmpty()) {
+                if (uiState.loading && uiState.shifts.isEmpty()) {
                     CircularProgressIndicator(Modifier.align(Alignment.Center))
                 }
                 LazyColumn(Modifier.fillMaxSize()) {
-                    items(shifts) { shift ->
+                    items(uiState.shifts) { shift ->
                         ShiftRow(shift, vm)
                         HorizontalDivider()
                     }

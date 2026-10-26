@@ -1,5 +1,30 @@
 # Assignment 03: Code smells, score
 
+## Round 2 (commit a927b1c): 15 / 25. Below the pass line (20).
+
+Four of the five round 1 items are done and done properly: the diff is sixteen files with a real `.gitignore`, `submitAllDrafts` is sequential again, `tmp` is back with a `1.json` that now matches `main`, and `RateProvider` is the right seam with a ViewModel test that pins 605.0 at a rate of 55. The new tests for newest-first order, `approved` for unbillable, "Already submitted" with no request made, and failed submit leaving `draft` are exactly the ones asked for.
+
+What keeps it under the line is the half of item 2 that was not done, and `SMELLS.md` saying it was. `ShiftRow` now hardcodes `rate = 42.0`, so every row shows pay at 42 while the header above it uses the preference. That is still the behaviour change from round 1, now visible as two different numbers on one screen. `SMELLS.md` row 6 marks `ShiftRow(shift, vm)` as fixed and the function is unchanged. Row 12 marks `tmp` as deleted while the section below says it was retained. The "100% test coverage" line and the quoted-instructions sentence are still there, the PR body is still empty, and the round's one commit is called "commit message for fixes phase 2".
+
+| Dimension | R1 | R2 | Why |
+|---|---|---|---|
+| Correctness | 2 | 3 | Header pay reads the preference again through `RateProvider`; `submitAllDrafts` sequential; `tmp` and schema version 1 restored, `1.json` is now the real version 1. Still broken: `ShiftRow` line 154 `Utils.calcPay(shift, rate = 42.0)`. On `main` that line read `hourly_rate`; on this branch it never will. A technician at 55 sees the header at 55 and every row at 42. One contract line, one call site, still a behaviour change. |
+| Architecture and boundaries | 3 | 3 | `RateProvider` as a `fun interface` with the SharedPreferences implementation in app wiring is the textbook move, and the ViewModel no longer touches Android for the rate. Unchanged from round 1: `Injector.repository` and now `Injector.rateProvider` as default parameters; `ShiftRow(shift, vm)`; `formatRow` in the ViewModel; `catch (e: Exception)` swallowing cancellation; `Utils.rate(context)` still present as dead code with its catch-all. |
+| Code quality and idiom | 2 | 3 | Hygiene fixed: no generated files, no APK, no daemon toolchain file, `.gitignore` covers `app/build` and `.idea`. The sequential loop is back as it was. Against that: a magic number `42.0` in a composable where the rule lives in one place elsewhere, and a dead `rate()` function kept after its only callers were removed. |
+| Tests | 3 | 4 | Pay pinned as a number at a non-default rate; order, unbillable, already-submitted (with `api.submitted.size == 0`) and the draft-after-failure assertions all land and all test the contract rather than the implementation. `ShiftRepositoryTest` failure case still does not assert the Room row. Nothing can test `ShiftRow` as it stands, which is the point of row 6. |
+| Communication | 2 | 2 | The catalog is better: rows 5 and 6 from round 1 are gone, the rate and `ShiftRow` rows are in, and the risk column has `Medium` where it should. But two rows claim fixes that are not in the diff (row 6, and row 12 against the "deliberately left" section), "100% test coverage" is still asserted, the sentence quoting operator instructions is still there, the question of how the work was produced was not answered in the PR body, the title is still "assignment 3 completed", and the commit message is a placeholder. A reviewer who finds one "Fixed: Yes" that is not fixed re-reads every other row. |
+
+## What is left
+
+1. `ShiftRow`: take the rate out of the row. Either pass `rate` (or the formatted pay string) from the screen, which already has `uiState`, or give the row `onSubmit`/`onDelete` lambdas and precomputed strings as your own row 6 describes. Delete `Utils.rate()`. Add `payPerShift` or similar to the UI state so a ViewModel test can pin a row's pay at 55.
+2. `SMELLS.md`: every "Fixed? Yes" must be true at the commit it is written against. Row 6 becomes "No" or the fix lands; row 12 drops `tmp`; delete "100% test coverage"; rewrite the `FakeTimesheetBackend` line in your own words.
+3. PR body: what to look at first, and how the work was produced. Title per the brief.
+4. Commit messages that name the smell. "commit message for fixes phase 2" is the kind of line an interviewer screenshots.
+
+Item 1 is worth about three points across Correctness and Code quality; item 2 is worth two in Communication. Both together is a pass.
+
+---
+
 ## Round 1 (commit a6799b2): 12 / 25. Below the pass line (20).
 
 The seam is right: `ShiftRepository(dao, api, dispatcher)` and `TimesheetViewModel(repository)` are the two moves that make the ViewModel testable on the JVM, `SubmitResult` is the right return type, the Toast is out of the data layer, the week totals are out of the composable, and `UtilsTest` now pins most of `Utils`. That is a sound first hour.

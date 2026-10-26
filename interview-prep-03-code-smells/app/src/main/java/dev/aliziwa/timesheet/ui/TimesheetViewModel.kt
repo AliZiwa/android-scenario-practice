@@ -3,6 +3,7 @@ package dev.aliziwa.timesheet.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.aliziwa.timesheet.Injector
+import dev.aliziwa.timesheet.data.RateProvider
 import dev.aliziwa.timesheet.data.ShiftRepository
 import dev.aliziwa.timesheet.data.SubmitResult
 import dev.aliziwa.timesheet.data.local.ShiftEntity
@@ -25,6 +26,7 @@ data class TimesheetUiState(
 
 class TimesheetViewModel(
     private val repository: ShiftRepository = Injector.repository,
+    private val rateProvider: RateProvider = Injector.rateProvider,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TimesheetUiState())
@@ -140,7 +142,7 @@ class TimesheetViewModel(
         var worked = 0
         var ot = 0
         var pay = 0.0
-        val rate = Utils.rate()
+        val rate = rateProvider.getRate()
 
         for (s in newList) {
             if (Utils.weekStart(s.date) == week) {

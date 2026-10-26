@@ -6,9 +6,6 @@ import dev.aliziwa.timesheet.data.remote.ShiftDto
 import dev.aliziwa.timesheet.data.remote.TimesheetApi
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 
 sealed interface SubmitResult {
@@ -71,18 +68,12 @@ class ShiftRepository(
         }
     }
 
-    /**
-     * Submits all draft shifts concurrently to resolve the sequential N+1 bottleneck.
-     */
     suspend fun submitAllDrafts(): Int = withContext(ioDispatcher) {
+        var n = 0
         val drafts = dao.getByStatus("draft")
-        if (drafts.isEmpty()) return@withContext 0
-
-        coroutineScope {
-            val deferreds = drafts.map { draft ->
-                async { submit(draft) is SubmitResult.Success }
-            }
-            deferreds.awaitAll().count { it }
+        for (d in drafts) {
+            if (submit(d) is SubmitResult.Success) n++
         }
+        n
     }
 }

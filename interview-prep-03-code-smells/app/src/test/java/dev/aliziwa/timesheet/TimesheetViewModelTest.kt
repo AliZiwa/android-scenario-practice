@@ -1,6 +1,8 @@
 package dev.aliziwa.timesheet
 
+import dev.aliziwa.timesheet.data.RateProvider
 import dev.aliziwa.timesheet.data.ShiftRepository
+import dev.aliziwa.timesheet.data.local.ShiftEntity
 import dev.aliziwa.timesheet.ui.TimesheetViewModel
 import dev.aliziwa.timesheet.util.Utils
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -23,6 +25,7 @@ class TimesheetViewModelTest {
     private lateinit var dao: InMemoryShiftDao
     private lateinit var api: FakeTimesheetApi
     private lateinit var repository: ShiftRepository
+    private lateinit var rateProvider: RateProvider
     private lateinit var viewModel: TimesheetViewModel
 
     @Before
@@ -30,14 +33,26 @@ class TimesheetViewModelTest {
         dao = InMemoryShiftDao()
         api = FakeTimesheetApi()
         repository = ShiftRepository(dao, api, mainDispatcherRule.dispatcher)
-        viewModel = TimesheetViewModel(repository)
+        rateProvider = RateProvider { 42.0 }
+        viewModel = TimesheetViewModel(repository, rateProvider)
     }
 
     @Test
-    fun `initial load fetches shifts into uiState`() = runTest {
-        val state = viewModel.uiState.value
+    fun `initial load fetches pre-populated shifts in newest-first order into uiState`() = runTest {
+        val olderShift = ShiftEntity(id = 1, workOrderId = "WO-OLD", date = "2026-10-12", startMinutes = 8 * 60)
+        val newerShift = ShiftEntity(id = 2, workOrderId = "WO-NEW", date = "2026-10-14", startMinutes = 8 * 60)
+        dao.insert(olderShift)
+        dao.insert(newerShift)
+
+        val vm = TimesheetViewModel(repository, rateProvider)
+        val state = vm.uiState.value
+
         assertFalse(state.loading)
         assertNull(state.message)
+        assertEquals(2, state.shifts.size)
+        // Newest date first
+        assertEquals("WO-NEW", state.shifts[0].workOrderId)
+        assertEquals("WO-OLD", state.shifts[1].workOrderId)
     }
 
     @Test
@@ -92,9 +107,13 @@ class TimesheetViewModelTest {
     }
 
     @Test
-    fun `createShift saves valid shift and calculates weekly totals in uiState`() = runTest {
+    fun `createShift with custom rate provider calculates exact pay number in uiState`() = runTest {
+        val customRateProvider = RateProvider { 55.0 } // Technician with hourly_rate = 55
+        val vm = TimesheetViewModel(repository, customRateProvider)
         val todayDate = Utils.today()
-        viewModel.createShift(
+
+        // 10 hours worked = 8h standard ($55) + 2h overtime ($82.50) = $440 + $165 = $605.00
+        vm.createShift(
             workOrderId = "WO-101",
             date = todayDate,
             startHour = 8,
@@ -106,26 +125,17 @@ class TimesheetViewModelTest {
             billable = true,
             rateOverride = null,
         )
-        val state = viewModel.uiState.value
+
+        val state = vm.uiState.value
         assertEquals("Saved", state.message)
         assertEquals(1, state.shifts.size)
-
-        val created = state.shifts[0]
-        assertEquals("WO-101", created.workOrderId)
-        assertEquals(todayDate, created.date)
-        assertEquals(480, created.startMinutes)
-        assertEquals(1110, created.endMinutes)
-        assertEquals(30, created.breakMinutes)
-        assertEquals("draft", created.status)
-
-        // 10 hours worked = 600 min, 120 min overtime
         assertEquals(600, state.workedMinutes)
         assertEquals(120, state.overtimeMinutes)
-        assertTrue(state.totalPay > 0.0)
+        assertEquals(605.0, state.totalPay, 0.001)
     }
 
     @Test
-    fun `submit updates shift status and server ID on success`() = runTest {
+    fun `submit billable shift updates status to submitted`() = runTest {
         viewModel.createShift(
             workOrderId = "WO-102",
             date = "2026-10-14",
@@ -148,7 +158,48 @@ class TimesheetViewModelTest {
     }
 
     @Test
-    fun `submit sets message on server failure`() = runTest {
+    fun `submit unbillable shift updates status to approved`() = runTest {
+        viewModel.createShift(
+            workOrderId = "WO-UNBILLABLE",
+            date = "2026-10-14",
+            startHour = 8,
+            startMinute = 0,
+            endHour = 16,
+            endMinute = 0,
+            breakMinutes = 0,
+            note = "Internal training",
+            billable = false,
+            rateOverride = null,
+        )
+        val shift = viewModel.uiState.value.shifts[0]
+        viewModel.submit(shift)
+
+        val updatedShift = viewModel.uiState.value.shifts[0]
+        assertNotNull(updatedShift.serverId)
+        assertEquals("approved", updatedShift.status)
+    }
+
+    @Test
+    fun `submit already submitted shift displays Already submitted error`() = runTest {
+        val submittedShift = ShiftEntity(
+            id = 1,
+            workOrderId = "WO-DONE",
+            date = "2026-10-14",
+            status = "submitted",
+            serverId = "srv-999",
+        )
+        dao.insert(submittedShift)
+        viewModel.load()
+
+        val shift = viewModel.uiState.value.shifts[0]
+        viewModel.submit(shift)
+
+        assertEquals("Already submitted", viewModel.uiState.value.message)
+        assertEquals(0, api.submitted.size) // No HTTP request made
+    }
+
+    @Test
+    fun `submit failure sets message and leaves shift as draft`() = runTest {
         viewModel.createShift(
             workOrderId = "WO-103",
             date = "2026-10-14",
@@ -165,11 +216,15 @@ class TimesheetViewModelTest {
         api.nextFailure = FakeTimesheetApi.httpError(422)
 
         viewModel.submit(shift)
+
         assertTrue(viewModel.uiState.value.message?.startsWith("Submit failed") == true)
+        val currentShift = viewModel.uiState.value.shifts[0]
+        assertEquals("draft", currentShift.status)
+        assertNull(currentShift.serverId)
     }
 
     @Test
-    fun `submitAll submits all draft shifts and updates message`() = runTest {
+    fun `submitAll submits all draft shifts sequentially and updates message`() = runTest {
         viewModel.createShift(
             workOrderId = "WO-105",
             date = "2026-10-14",

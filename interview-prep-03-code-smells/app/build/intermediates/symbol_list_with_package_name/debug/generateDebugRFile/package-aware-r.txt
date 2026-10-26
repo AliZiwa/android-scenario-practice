@@ -1,3 +1,0 @@
-dev.aliziwa.timesheet
-string app_name
-style Theme_Timesheet

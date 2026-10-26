@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "55686f2add14e5061c7163282df7e6a8",
+    "identityHash": "900b09725757af6a4557f3d7a7967032",
     "entities": [
       {
         "tableName": "shifts",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `workOrderId` TEXT NOT NULL, `date` TEXT NOT NULL, `startMinutes` INTEGER NOT NULL, `endMinutes` INTEGER NOT NULL, `breakMinutes` INTEGER NOT NULL, `note` TEXT, `billable` INTEGER NOT NULL, `status` TEXT NOT NULL, `rateOverride` REAL, `serverId` TEXT)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `workOrderId` TEXT NOT NULL, `date` TEXT NOT NULL, `startMinutes` INTEGER NOT NULL, `endMinutes` INTEGER NOT NULL, `breakMinutes` INTEGER NOT NULL, `note` TEXT, `billable` INTEGER NOT NULL, `status` TEXT NOT NULL, `rateOverride` REAL, `serverId` TEXT, `tmp` TEXT)",
         "fields": [
           {
             "fieldPath": "id",
@@ -70,6 +70,11 @@
             "fieldPath": "serverId",
             "columnName": "serverId",
             "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "tmp",
+            "columnName": "tmp",
+            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -82,7 +87,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '55686f2add14e5061c7163282df7e6a8')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '900b09725757af6a4557f3d7a7967032')"
     ]
   }
 }

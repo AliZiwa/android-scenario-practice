@@ -151,7 +151,7 @@ fun ShiftRow(shift: ShiftEntity, vm: TimesheetViewModel) {
         Text(shift.workOrderId + "  " + Utils.statusLabel(shift.status), style = MaterialTheme.typography.titleMedium)
         Text(dateText, style = MaterialTheme.typography.labelSmall)
         Text(vm.formatRow(shift), style = MaterialTheme.typography.bodyMedium)
-        Text(Utils.fmtMoney(Utils.calcPay(shift, Utils.rate())), style = MaterialTheme.typography.bodyMedium)
+        Text(Utils.fmtMoney(Utils.calcPay(shift, rate = 42.0)), style = MaterialTheme.typography.bodyMedium)
         Row {
             if (!Utils.isSubmitted(shift)) {
                 Button(onClick = { vm.submit(shift) }) { Text("Submit") }

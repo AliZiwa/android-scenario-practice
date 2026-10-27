@@ -16,5 +16,5 @@ data class ShiftEntity(
     var status: String = "draft", // draft, submitted, approved
     var rateOverride: Double? = null,
     var serverId: String? = null,
-    var tmp: String? = null, // TODO remove, was used for the old sync
+    var tmp: String? = null,
 )

@@ -33,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.aliziwa.timesheet.data.local.ShiftEntity
 import dev.aliziwa.timesheet.util.Utils
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -42,9 +41,7 @@ import java.util.Locale
 @Composable
 fun TimesheetScreen() {
     val vm: TimesheetViewModel = viewModel()
-    val shifts by vm.shifts.collectAsState()
-    val loading by vm.loading.collectAsState()
-    val message by vm.message.collectAsState()
+    val uiState by vm.uiState.collectAsState()
 
     var workOrder by remember { mutableStateOf("") }
     var date by remember { mutableStateOf(Utils.today()) }
@@ -54,21 +51,6 @@ fun TimesheetScreen() {
     var note by remember { mutableStateOf("") }
     var billable by remember { mutableStateOf(true) }
     var showForm by remember { mutableStateOf(false) }
-
-    // Weekly totals for the header
-    var worked = 0
-    var ot = 0
-    var pay = 0.0
-    val rate = Utils.rate()
-    for (s in shifts) {
-        if (Utils.weekStart(s.date) == vm.selectedWeek) {
-            val m = Utils.workedMinutes(s)
-            worked += m
-            if (m > 480) ot += m - 480
-            pay += Utils.calcPay(s, rate)
-        }
-    }
-    pay = Math.round(pay * 100) / 100.0
 
     Scaffold(
         topBar = {
@@ -83,12 +65,14 @@ fun TimesheetScreen() {
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
             Column(Modifier.fillMaxWidth().padding(16.dp)) {
-                Text("Week of " + Utils.displayDate(vm.selectedWeek), style = MaterialTheme.typography.titleMedium)
+                Text("Week of " + Utils.displayDate(uiState.selectedWeek), style = MaterialTheme.typography.titleMedium)
                 Text(
-                    "Worked " + Utils.fmtDuration(worked) + ", overtime " + Utils.fmtDuration(ot) + ", pay " + Utils.fmtMoney(pay),
+                    "Worked " + Utils.fmtDuration(uiState.workedMinutes) +
+                        ", overtime " + Utils.fmtDuration(uiState.overtimeMinutes) +
+                        ", pay " + Utils.fmtMoney(uiState.totalPay),
                     style = MaterialTheme.typography.bodyMedium,
                 )
-                message?.let {
+                uiState.message?.let {
                     Spacer(Modifier.height(4.dp))
                     Text(it, color = MaterialTheme.colorScheme.primary)
                     TextButton(onClick = { vm.clearMessage() }) { Text("Dismiss") }
@@ -139,12 +123,16 @@ fun TimesheetScreen() {
             }
 
             Box(Modifier.fillMaxSize()) {
-                if (loading && shifts.isEmpty()) {
+                if (uiState.loading && uiState.shiftModels.isEmpty()) {
                     CircularProgressIndicator(Modifier.align(Alignment.Center))
                 }
                 LazyColumn(Modifier.fillMaxSize()) {
-                    items(shifts) { shift ->
-                        ShiftRow(shift, vm)
+                    items(uiState.shiftModels) { model ->
+                        ShiftRow(
+                            model = model,
+                            onSubmit = { vm.submit(model.shift) },
+                            onDelete = { vm.delete(model.shift) },
+                        )
                         HorizontalDivider()
                     }
                 }
@@ -154,26 +142,30 @@ fun TimesheetScreen() {
 }
 
 @Composable
-fun ShiftRow(shift: ShiftEntity, vm: TimesheetViewModel) {
+fun ShiftRow(
+    model: ShiftUiModel,
+    onSubmit: () -> Unit,
+    onDelete: () -> Unit,
+) {
     val fmt = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     val display = SimpleDateFormat("EEEE, d MMMM", Locale.US)
     val dateText = try {
-        display.format(fmt.parse(shift.date)!!)
+        display.format(fmt.parse(model.shift.date)!!)
     } catch (e: Exception) {
-        shift.date
+        model.shift.date
     }
     Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
-        Text(shift.workOrderId + "  " + Utils.statusLabel(shift.status), style = MaterialTheme.typography.titleMedium)
+        Text(model.shift.workOrderId + "  " + Utils.statusLabel(model.shift.status), style = MaterialTheme.typography.titleMedium)
         Text(dateText, style = MaterialTheme.typography.labelSmall)
-        Text(vm.formatRow(shift), style = MaterialTheme.typography.bodyMedium)
-        Text(Utils.fmtMoney(Utils.calcPay(shift, Utils.rate())), style = MaterialTheme.typography.bodyMedium)
+        Text(model.formattedRow, style = MaterialTheme.typography.bodyMedium)
+        Text(Utils.fmtMoney(model.pay), style = MaterialTheme.typography.bodyMedium)
         Row {
-            if (!Utils.isSubmitted(shift)) {
-                Button(onClick = { vm.submit(shift) }) { Text("Submit") }
+            if (!Utils.isSubmitted(model.shift)) {
+                Button(onClick = onSubmit) { Text("Submit") }
                 Spacer(Modifier.width(8.dp))
-                OutlinedButton(onClick = { vm.delete(shift) }) { Text("Delete") }
+                OutlinedButton(onClick = onDelete) { Text("Delete") }
             } else {
-                Text("Server id: " + (shift.serverId ?: "?"), style = MaterialTheme.typography.labelSmall)
+                Text("Server id: " + (model.shift.serverId ?: "?"), style = MaterialTheme.typography.labelSmall)
             }
         }
     }

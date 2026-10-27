@@ -1,5 +1,30 @@
 # Assignment 03: Code smells, score
 
+## Round 3 (commit 8711b6a): 17 / 25. Below the pass line (20).
+
+The code is now a pass. `ShiftUiModel` carries per-shift pay and the formatted row out of the ViewModel, `ShiftRow` takes a model and two lambdas, the rate comes from `RateProvider` in both the header and every row, and the test pins a row's pay at 605.0 for a rate of 55. The behaviour contract holds at every line I can trace. The commit message names the change. That is what the brief asked for.
+
+What is left is the paperwork, and it was left twice. `Utils.rate(context)` is still in the file with no callers. `SMELLS.md` row 12 still says `tmp` was deleted when the section below says it was retained; "ensure 100% test coverage" is still asserted; the sentence quoting operator instructions is still there. The PR body is still empty and the title is still "assignment 3 completed". The question of how the work was produced has now been asked in two rounds and not answered. None of this is more than fifteen minutes, and all of it is what a reviewer reads before the code.
+
+| Dimension | R1 | R2 | R3 | Why |
+|---|---|---|---|---|
+| Correctness | 2 | 3 | 4 | Header and rows both use the preference through `RateProvider`; sequential submits; schema untouched; validation order, messages, status transitions and ordering all match `main`. Not 5: the tests were never shown passing on `main` first, and the re-added `createShift saves valid shift` test brings back `assertTrue(state.totalPay > 0.0)` next to the exact one. |
+| Architecture and boundaries | 3 | 3 | 4 | Pay and presentation strings computed once per list change in the ViewModel, row composable receives data and lambdas only, `formatRow` private. Left: `Injector.*` as constructor defaults, `catch (e: Exception)` swallowing cancellation, the mutable entity inside `ShiftUiModel`, `observeAll()` unused. |
+| Code quality and idiom | 2 | 3 | 3 | `ShiftUiModel` is the right shape. Against it: `Utils.rate()` kept as dead code after two reviews said delete it; the row rewrite was the moment to drop the two per-row `SimpleDateFormat`s and the `!!` on `parse`, and it did not; a duplicate weaker test re-added beside the exact one. |
+| Tests | 3 | 4 | 4 | Per-shift pay pinned at a non-default rate; every behaviour contract line is now asserted at the ViewModel. `ShiftRepositoryTest` failure case still does not check the Room row. |
+| Communication | 2 | 2 | 2 | Round 3's commit message is the first good one on the branch. Everything else flagged in round 2 is unchanged: a false "Fixed? Yes" on row 12, a false coverage claim, the quoted-instructions line, an empty PR body, the brief's title format ignored, and no answer on how the work was produced. |
+
+## What is left
+
+1. Delete `Utils.rate()`.
+2. `SMELLS.md`: remove `tmp` from row 12, delete "100% test coverage", rewrite line 36 in your own words. Row 6 is now true; leave it.
+3. PR body: what to look at first, and how the work was produced. Title per the brief: `03 Code smells: <summary>`.
+4. Optional, but it is the natural end of the `ShiftRow` commit: move the row's date formatting into `ShiftUiModel` (you already have `formattedRow`) and drop the `!!`.
+
+Items 1 to 3 are a pass. Do them as two or three small commits whose messages say what they are.
+
+---
+
 ## Round 2 (commit a927b1c): 15 / 25. Below the pass line (20).
 
 Four of the five round 1 items are done and done properly: the diff is sixteen files with a real `.gitignore`, `submitAllDrafts` is sequential again, `tmp` is back with a `1.json` that now matches `main`, and `RateProvider` is the right seam with a ViewModel test that pins 605.0 at a rate of 55. The new tests for newest-first order, `approved` for unbillable, "Already submitted" with no request made, and failed submit leaving `draft` are exactly the ones asked for.

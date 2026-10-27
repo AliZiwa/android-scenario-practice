@@ -1,6 +1,5 @@
 package dev.aliziwa.timesheet.util
 
-import android.content.Context
 import dev.aliziwa.timesheet.data.local.ShiftEntity
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -81,15 +80,6 @@ object Utils {
         if (status == "submitted") return "Submitted"
         if (status == "approved") return "Approved"
         return status
-    }
-
-    fun rate(context: Context? = null): Double {
-        return try {
-            val prefs = context?.getSharedPreferences("timesheet", 0)
-            prefs?.getFloat("hourly_rate", 42.0f)?.toDouble() ?: 42.0
-        } catch (e: Exception) {
-            42.0
-        }
     }
 
     fun today(): String = dateFormat().format(System.currentTimeMillis())

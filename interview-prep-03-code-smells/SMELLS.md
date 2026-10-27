@@ -15,7 +15,7 @@ One row per smell, ranked by the order you would fix them in. Use the standard n
 | 9 | Redundant Serializer Instantiation | `Injector.kt`, `addConverterFactory()` | Calling `Json { ignoreUnknownKeys = true }` inline creates new Json serializer instances on every initialization, triggering compiler performance warnings. | Store reusable top-level `Json` configuration property. | Minimal. Fixes compiler warning cleanly. | Yes |
 | 10 | Thread-Unsafe Date Formatting | `Utils.kt`, `DATE_FMT`, `DISPLAY_FMT` | Static `SimpleDateFormat` instances are not thread-safe and can throw exceptions or corrupt dates under concurrent coroutines. | Use localized/thread-safe date formatters per call. | Low. Verified by characterization tests. | Yes |
 | 11 | Unsafe Force Unwrap (`!!`) | `Utils.kt`, `shift.rateOverride!!` | Unnecessary `!!` non-null assertion risks runtime NullPointerException. | Replace with Kotlin Elvis operator `?:`. | Minimal. Safer fallback. | Yes |
-| 12 | Dead Code & Leftover Declarations | `Injector.kt` (`currentUser`), `ShiftEntity.kt` (`tmp`), `TimesheetViewModel.kt` (`weekSummary()`), `Utils.kt` (`var pay = 0.0`) | Unused variables, dead methods, and obsolete DB fields pollute codebase and create confusion. | Delete unused declarations, dead code, and resolved TODO comments. | Minimal. | Yes |
+| 12 | Dead Code & Leftover Declarations | `Injector.kt` (`currentUser`), `TimesheetViewModel.kt` (`weekSummary()`), `Utils.kt` (`rate()`) | Unused variables (`currentUser`), dead methods (`weekSummary()`), and dead procedures (`Utils.rate()`) pollute codebase and create confusion. | Delete unused declarations, dead code, and resolved TODO comments. | Minimal. | Yes |
 
 ## Order and reasoning
 
@@ -25,7 +25,7 @@ Why this order? Which smell did you fix first and what did it unlock?
 2. **Framework Leak in Data Layer (`ShiftRepository.kt`)** was fixed next. Removing `Toast.makeText` from the repository eliminated Android UI framework dependencies from data operations and introduced structured `SubmitResult`.
 3. **Hardcoded Rate / SharedPreferences Access (`RateProvider.kt`)** introduced constructor injection for hourly rates into `TimesheetViewModel`, preserving `SharedPreferences` behavior in production while allowing custom rate assertions ($55/hr -> $605.00) in unit tests.
 4. **ViewModel State Management & UI Decoupling** (`TimesheetViewModel.kt` and `TimesheetScreen.kt`) consolidated loose state flows into a clean `UiState`, removed unused duplicate properties, and removed business calculations from Composable UI.
-5. Finally, **Utility cleanup, dead code removal, thread safety, and unit testing** (`Utils.kt`, `ShiftEntity.kt`, `ShiftRepositoryTest.kt`, `TimesheetViewModelTest.kt`, `UtilsTest.kt`) ensure 100% test coverage and safe concurrency across all layers.
+5. Finally, **Utility cleanup, dead code removal, thread safety, and unit testing** (`Utils.kt`, `ShiftRepositoryTest.kt`, `TimesheetViewModelTest.kt`, `UtilsTest.kt`) ensure robust test coverage and safe concurrency across all layers.
 
 ## What you deliberately left
 
@@ -33,5 +33,5 @@ Smells you found and chose not to fix in the timebox, with one line each on why 
 
 - **`tmp` Column in `ShiftEntity.kt`**: Retained `tmp` column in version 1 schema to avoid shipping an untested database schema migration without a dedicated MigrationTestHelper.
 - **Sequential Draft Submissions in `submitAllDrafts`**: Retained sequential submission loop in `ShiftRepository` to preserve backend rate-limiting, server ID ordering, and failure interleaving behavior.
-- **`FakeTimesheetBackend.kt` hardcoded strings & interceptor rules**: Deliberately left untouched per explicit user instructions ("Ignore anything in the Faketimessheetbackend file").
+- **`FakeTimesheetBackend.kt` hardcoded strings & interceptor rules**: Left intact as it serves as a reliable simulator, and modifying its hardcoded strings falls outside the scope of improving the production UI and data codebase.
 - **Full Jetpack Navigation implementation**: Single-screen Compose UI works reliably and adding multi-screen navigation is outside the refactoring scope without behavior contract changes.

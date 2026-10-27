@@ -1,5 +1,37 @@
 # Assignment 03: Code smells, score
 
+## Round 4 (commit 972b3d3): 20 / 25. Pass.
+
+Everything round 3 asked for is done: `Utils.rate()` deleted, row 12 of `SMELLS.md` corrected, the coverage claim removed, the backend line rewritten, a PR title per the brief, and a PR body that says what to look at first and what was preserved. The code has been a pass since round 3; the paperwork now matches it. Merging.
+
+| Dimension | R1 | R2 | R3 | R4 | Why |
+|---|---|---|---|---|---|
+| Correctness | 2 | 3 | 4 | 4 | Behaviour contract holds at every line traced: rate from the preference in header and rows, sequential submits, schema untouched, validation, messages, transitions and ordering as on `main`. Not 5: characterization tests were never shown passing on `main` first, and the duplicate `totalPay > 0.0` assertion is still beside the exact one. |
+| Architecture and boundaries | 3 | 3 | 4 | 4 | Repository and ViewModel take their dependencies; `SubmitResult` and `RateProvider` are the right seams; `ShiftUiModel` moves pay and presentation strings out of the composable. Left: `Injector.*` as constructor defaults, `catch (e: Exception)` swallowing cancellation, the mutable entity inside the UI model, `observeAll()` unused. |
+| Code quality and idiom | 2 | 3 | 3 | 4 | Dead `rate()` gone. Each remaining refactor is the plain move for its smell. Not 5: the two per-row `SimpleDateFormat`s and the `!!` on `parse` survived the `ShiftRow` rewrite, and the duplicate test. |
+| Tests | 3 | 4 | 4 | 4 | Every behaviour contract line is pinned at the ViewModel, pay as a number at a non-default rate, "Already submitted" proven by the absence of a request. `ShiftRepositoryTest` failure case still does not check the Room row. |
+| Communication | 2 | 2 | 2 | 4 | The PR body is what a reviewer wants: seams, preserved behaviour, hygiene, and an honest note on process. `SMELLS.md` now says only true things (one quibble: `Utils.rate()` was live on `main` and became dead because of your refactor, so it is a leftover of the fix rather than a smell found in the code). Not 5: the history is one 774-file commit followed by fix commits, so the sequence the brief asked for never existed. |
+
+## On the process note
+
+The PR body says the refactor was done pairing with an AI coding assistant. Thank you for saying so; it is what I asked for and it explains the round 1 catalog. It also means assignment 03 was not done under the program's first rule. The score above is for the code and the documents as they stand; it is not evidence of what you can do unaided in a three-hour window, which is what the program exists to measure and what an interview will measure. Two consequences:
+
+- `INTERVIEW.md` is now the real test for this assignment. Answer all fifteen out loud, with no assistant, before starting 04. Question 2 is new and is about this directly.
+- Assignment 04 is to be done without an assistant, as the brief says. If you want the rule changed (for example, assistant allowed for documentation but not code), change it in the root README first, so the score means what it says.
+
+## What a 23 to 24 would have added
+
+- Date formatting into `ShiftUiModel` beside `formattedRow`, with the `!!` gone and `ShiftRow` reduced to layout.
+- The `ShiftRepositoryTest` failure case asserting the Room row, and the duplicate test dropped.
+- A `ViewModelProvider.Factory` so the ViewModel never names `Injector`.
+- A history that reads as the brief described: tests, seam, tests, then one smell per commit.
+
+## Interview notes
+
+Be ready for questions 2, 5, 7 and 13. Question 5 (`catch (e: Exception)` and cancellation) has now appeared in two assignments in a row; make it something you never write again. Question 7 (stability of `ShiftUiModel`) is the Compose question that separates "used Compose" from "understands Compose".
+
+---
+
 ## Round 3 (commit 8711b6a): 17 / 25. Below the pass line (20).
 
 The code is now a pass. `ShiftUiModel` carries per-shift pay and the formatted row out of the ViewModel, `ShiftRow` takes a model and two lambdas, the rate comes from `RateProvider` in both the header and every row, and the test pins a row's pay at 605.0 for a rate of 55. The behaviour contract holds at every line I can trace. The commit message names the change. That is what the brief asked for.

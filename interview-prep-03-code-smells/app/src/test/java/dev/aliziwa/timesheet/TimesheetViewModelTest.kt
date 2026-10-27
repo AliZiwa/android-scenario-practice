@@ -49,10 +49,10 @@ class TimesheetViewModelTest {
 
         assertFalse(state.loading)
         assertNull(state.message)
-        assertEquals(2, state.shifts.size)
+        assertEquals(2, state.shiftModels.size)
         // Newest date first
-        assertEquals("WO-NEW", state.shifts[0].workOrderId)
-        assertEquals("WO-OLD", state.shifts[1].workOrderId)
+        assertEquals("WO-NEW", state.shiftModels[0].shift.workOrderId)
+        assertEquals("WO-OLD", state.shiftModels[1].shift.workOrderId)
     }
 
     @Test
@@ -107,6 +107,39 @@ class TimesheetViewModelTest {
     }
 
     @Test
+    fun `createShift saves valid shift and calculates weekly totals in uiState`() = runTest {
+        val todayDate = Utils.today()
+        viewModel.createShift(
+            workOrderId = "WO-101",
+            date = todayDate,
+            startHour = 8,
+            startMinute = 0,
+            endHour = 18,
+            endMinute = 30,
+            breakMinutes = 30,
+            note = "Site inspection",
+            billable = true,
+            rateOverride = null,
+        )
+        val state = viewModel.uiState.value
+        assertEquals("Saved", state.message)
+        assertEquals(1, state.shiftModels.size)
+
+        val created = state.shiftModels[0].shift
+        assertEquals("WO-101", created.workOrderId)
+        assertEquals(todayDate, created.date)
+        assertEquals(480, created.startMinutes)
+        assertEquals(1110, created.endMinutes)
+        assertEquals(30, created.breakMinutes)
+        assertEquals("draft", created.status)
+
+        // 10 hours worked = 600 min, 120 min overtime
+        assertEquals(600, state.workedMinutes)
+        assertEquals(120, state.overtimeMinutes)
+        assertTrue(state.totalPay > 0.0)
+    }
+
+    @Test
     fun `createShift with custom rate provider calculates exact pay number in uiState`() = runTest {
         val customRateProvider = RateProvider { 55.0 } // Technician with hourly_rate = 55
         val vm = TimesheetViewModel(repository, customRateProvider)
@@ -128,10 +161,11 @@ class TimesheetViewModelTest {
 
         val state = vm.uiState.value
         assertEquals("Saved", state.message)
-        assertEquals(1, state.shifts.size)
+        assertEquals(1, state.shiftModels.size)
         assertEquals(600, state.workedMinutes)
         assertEquals(120, state.overtimeMinutes)
         assertEquals(605.0, state.totalPay, 0.001)
+        assertEquals(605.0, state.shiftModels[0].pay, 0.001)
     }
 
     @Test
@@ -148,10 +182,10 @@ class TimesheetViewModelTest {
             billable = true,
             rateOverride = null,
         )
-        val shift = viewModel.uiState.value.shifts[0]
+        val shift = viewModel.uiState.value.shiftModels[0].shift
         viewModel.submit(shift)
 
-        val updatedShift = viewModel.uiState.value.shifts[0]
+        val updatedShift = viewModel.uiState.value.shiftModels[0].shift
         assertNotNull(updatedShift.serverId)
         assertEquals("submitted", updatedShift.status)
         assertTrue(viewModel.uiState.value.message?.startsWith("Submitted") == true)
@@ -171,10 +205,10 @@ class TimesheetViewModelTest {
             billable = false,
             rateOverride = null,
         )
-        val shift = viewModel.uiState.value.shifts[0]
+        val shift = viewModel.uiState.value.shiftModels[0].shift
         viewModel.submit(shift)
 
-        val updatedShift = viewModel.uiState.value.shifts[0]
+        val updatedShift = viewModel.uiState.value.shiftModels[0].shift
         assertNotNull(updatedShift.serverId)
         assertEquals("approved", updatedShift.status)
     }
@@ -191,7 +225,7 @@ class TimesheetViewModelTest {
         dao.insert(submittedShift)
         viewModel.load()
 
-        val shift = viewModel.uiState.value.shifts[0]
+        val shift = viewModel.uiState.value.shiftModels[0].shift
         viewModel.submit(shift)
 
         assertEquals("Already submitted", viewModel.uiState.value.message)
@@ -212,13 +246,13 @@ class TimesheetViewModelTest {
             billable = true,
             rateOverride = null,
         )
-        val shift = viewModel.uiState.value.shifts[0]
+        val shift = viewModel.uiState.value.shiftModels[0].shift
         api.nextFailure = FakeTimesheetApi.httpError(422)
 
         viewModel.submit(shift)
 
         assertTrue(viewModel.uiState.value.message?.startsWith("Submit failed") == true)
-        val currentShift = viewModel.uiState.value.shifts[0]
+        val currentShift = viewModel.uiState.value.shiftModels[0].shift
         assertEquals("draft", currentShift.status)
         assertNull(currentShift.serverId)
     }
@@ -255,10 +289,10 @@ class TimesheetViewModelTest {
             billable = true,
             rateOverride = null,
         )
-        val shift = viewModel.uiState.value.shifts[0]
+        val shift = viewModel.uiState.value.shiftModels[0].shift
         viewModel.delete(shift)
 
-        assertTrue(viewModel.uiState.value.shifts.isEmpty())
+        assertTrue(viewModel.uiState.value.shiftModels.isEmpty())
     }
 
     @Test

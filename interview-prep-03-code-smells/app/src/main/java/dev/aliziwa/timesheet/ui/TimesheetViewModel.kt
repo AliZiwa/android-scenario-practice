@@ -14,8 +14,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+data class ShiftUiModel(
+    val shift: ShiftEntity,
+    val pay: Double,
+    val formattedRow: String
+)
+
 data class TimesheetUiState(
-    val shifts: List<ShiftEntity> = emptyList(),
+    val shiftModels: List<ShiftUiModel> = emptyList(),
     val loading: Boolean = false,
     val message: String? = null,
     val selectedWeek: String = Utils.weekStart(Utils.today()),
@@ -94,7 +100,7 @@ class TimesheetViewModel(
         viewModelScope.launch {
             val id = repository.save(s)
             s.id = id
-            val currentList = _uiState.value.shifts.toMutableList()
+            val currentList = _uiState.value.shiftModels.map { it.shift }.toMutableList()
             currentList.add(0, s)
             updateShifts(currentList)
             _uiState.update { it.copy(message = "Saved") }
@@ -132,7 +138,7 @@ class TimesheetViewModel(
     fun delete(shift: ShiftEntity) {
         viewModelScope.launch {
             repository.delete(shift.id)
-            val updated = _uiState.value.shifts.filterNot { it.id == shift.id }
+            val updated = _uiState.value.shiftModels.map { it.shift }.filterNot { it.id == shift.id }
             updateShifts(updated)
         }
     }
@@ -144,19 +150,22 @@ class TimesheetViewModel(
         var pay = 0.0
         val rate = rateProvider.getRate()
 
-        for (s in newList) {
+        val shiftModels = newList.map { s ->
+            val shiftPay = Utils.calcPay(s, rate)
             if (Utils.weekStart(s.date) == week) {
                 val m = Utils.workedMinutes(s)
                 worked += m
                 if (m > 480) ot += m - 480
-                pay += Utils.calcPay(s, rate)
+                pay += shiftPay
             }
+            ShiftUiModel(shift = s, pay = shiftPay, formattedRow = formatRow(s))
         }
+
         pay = Math.round(pay * 100) / 100.0
 
         _uiState.update {
             it.copy(
-                shifts = newList,
+                shiftModels = shiftModels,
                 workedMinutes = worked,
                 overtimeMinutes = ot,
                 totalPay = pay,
@@ -164,7 +173,7 @@ class TimesheetViewModel(
         }
     }
 
-    fun formatRow(shift: ShiftEntity): String {
+    private fun formatRow(shift: ShiftEntity): String {
         val sb = StringBuilder()
         sb.append(Utils.displayDate(shift.date))
         sb.append("  ")

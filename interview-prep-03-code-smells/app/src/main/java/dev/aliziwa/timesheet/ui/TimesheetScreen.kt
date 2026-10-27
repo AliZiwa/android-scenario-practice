@@ -33,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.aliziwa.timesheet.data.local.ShiftEntity
 import dev.aliziwa.timesheet.util.Utils
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -124,12 +123,16 @@ fun TimesheetScreen() {
             }
 
             Box(Modifier.fillMaxSize()) {
-                if (uiState.loading && uiState.shifts.isEmpty()) {
+                if (uiState.loading && uiState.shiftModels.isEmpty()) {
                     CircularProgressIndicator(Modifier.align(Alignment.Center))
                 }
                 LazyColumn(Modifier.fillMaxSize()) {
-                    items(uiState.shifts) { shift ->
-                        ShiftRow(shift, vm)
+                    items(uiState.shiftModels) { model ->
+                        ShiftRow(
+                            model = model,
+                            onSubmit = { vm.submit(model.shift) },
+                            onDelete = { vm.delete(model.shift) },
+                        )
                         HorizontalDivider()
                     }
                 }
@@ -139,26 +142,30 @@ fun TimesheetScreen() {
 }
 
 @Composable
-fun ShiftRow(shift: ShiftEntity, vm: TimesheetViewModel) {
+fun ShiftRow(
+    model: ShiftUiModel,
+    onSubmit: () -> Unit,
+    onDelete: () -> Unit,
+) {
     val fmt = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     val display = SimpleDateFormat("EEEE, d MMMM", Locale.US)
     val dateText = try {
-        display.format(fmt.parse(shift.date)!!)
+        display.format(fmt.parse(model.shift.date)!!)
     } catch (e: Exception) {
-        shift.date
+        model.shift.date
     }
     Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
-        Text(shift.workOrderId + "  " + Utils.statusLabel(shift.status), style = MaterialTheme.typography.titleMedium)
+        Text(model.shift.workOrderId + "  " + Utils.statusLabel(model.shift.status), style = MaterialTheme.typography.titleMedium)
         Text(dateText, style = MaterialTheme.typography.labelSmall)
-        Text(vm.formatRow(shift), style = MaterialTheme.typography.bodyMedium)
-        Text(Utils.fmtMoney(Utils.calcPay(shift, rate = 42.0)), style = MaterialTheme.typography.bodyMedium)
+        Text(model.formattedRow, style = MaterialTheme.typography.bodyMedium)
+        Text(Utils.fmtMoney(model.pay), style = MaterialTheme.typography.bodyMedium)
         Row {
-            if (!Utils.isSubmitted(shift)) {
-                Button(onClick = { vm.submit(shift) }) { Text("Submit") }
+            if (!Utils.isSubmitted(model.shift)) {
+                Button(onClick = onSubmit) { Text("Submit") }
                 Spacer(Modifier.width(8.dp))
-                OutlinedButton(onClick = { vm.delete(shift) }) { Text("Delete") }
+                OutlinedButton(onClick = onDelete) { Text("Delete") }
             } else {
-                Text("Server id: " + (shift.serverId ?: "?"), style = MaterialTheme.typography.labelSmall)
+                Text("Server id: " + (model.shift.serverId ?: "?"), style = MaterialTheme.typography.labelSmall)
             }
         }
     }

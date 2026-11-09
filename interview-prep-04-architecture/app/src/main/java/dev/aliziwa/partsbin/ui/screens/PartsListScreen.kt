@@ -1,4 +1,4 @@
-package dev.aliziwa.partsbin.screens
+package dev.aliziwa.partsbin.ui.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -23,7 +23,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,21 +30,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.aliziwa.partsbin.Globals
+import dev.aliziwa.partsbin.AppContainer
+import dev.aliziwa.partsbin.data.PartsRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PartsListScreen(onOpenPart: () -> Unit) {
-    val vm: PartsListViewModel = viewModel()
-    val rows by vm.rows.collectAsState()
-    val loading by vm.loading.collectAsState()
-    val message by vm.message.collectAsState()
-    val query by vm.query.collectAsState()
-    var offline by remember { mutableStateOf(Globals.offline) }
+fun PartsListScreen(
+    vm: PartsListViewModel,
+    onOpenPart: (String) -> Unit
+) {
+    val uiState by vm.uiState.collectAsStateWithLifecycle()
+    val query by remember { mutableStateOf("") }
+    var offline by remember { AppContainer.offline }
+
 
     LaunchedEffect(Unit) {
-        if (Globals.listDirty) vm.load()
+        vm.load()
     }
 
     Scaffold(
@@ -58,7 +60,6 @@ fun PartsListScreen(onOpenPart: () -> Unit) {
                         checked = offline,
                         onCheckedChange = {
                             offline = it
-                            Globals.offline = it
                         },
                     )
                     TextButton(onClick = { vm.load() }) { Text("Refresh") }
@@ -66,28 +67,46 @@ fun PartsListScreen(onOpenPart: () -> Unit) {
             )
         },
     ) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding)) {
+        Column(Modifier
+            .fillMaxSize()
+            .padding(padding)) {
+            val loading = uiState is PartsListState.Loading
+            val rowItems = when (uiState) {
+                is PartsListState.Loaded -> (uiState as PartsListState.Loaded).rows
+                else -> emptyList()
+            }
+            val message = when (uiState) {
+                is PartsListState.Error -> (uiState as PartsListState.Error).message
+                else -> null
+            }
+
             OutlinedTextField(
                 value = query,
                 onValueChange = { vm.onQueryChange(it) },
                 label = { Text("Search sku or name") },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
             )
+
             message?.let {
-                Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 16.dp))
+                Text(
+                    it,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
             }
             Box(Modifier.fillMaxSize()) {
-                if (loading && rows.isEmpty()) {
+                if (loading) {
                     CircularProgressIndicator(Modifier.align(Alignment.Center))
                 }
                 LazyColumn(Modifier.fillMaxSize()) {
-                    items(rows, key = { it.id }) { row ->
+                    items(rowItems, key = { it.id }) { row ->
                         Row(
                             Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    vm.select(row.id)
-                                    onOpenPart()
+                                    onOpenPart(row.id)
                                 }
                                 .padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,

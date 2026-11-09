@@ -1,5 +1,7 @@
-package dev.aliziwa.partsbin.net
+package dev.aliziwa.partsbin.data.remote
 
+import dev.aliziwa.partsbin.data.local.db.PartEntity
+import dev.aliziwa.partsbin.ui.screens.PartRow
 import kotlinx.serialization.Serializable
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -16,7 +18,30 @@ data class PartDto(
     val binLocation: String,
     val version: Int,
     val updatedAt: String, // ISO-8601, e.g. 2026-10-27T14:03:00Z
-)
+) {
+    fun toRow() = PartRow(
+        id = id,
+        sku = sku,
+        name = name,
+        quantity = quantity,
+        minQuantity = minQuantity,
+        bin = binLocation,
+        updatedAt = updatedAt,
+        version = version,
+        lowStock = quantity <= minQuantity,
+    )
+
+    fun toEntity() = PartEntity(
+        id = id,
+        sku = sku,
+        name = name,
+        quantity = quantity,
+        minQuantity = minQuantity,
+        binLocation = binLocation,
+        version = version,
+        updatedAt = updatedAt,
+    )
+}
 
 @Serializable
 data class AdjustRequest(

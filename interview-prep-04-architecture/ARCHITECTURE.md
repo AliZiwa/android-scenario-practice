@@ -43,7 +43,7 @@ Where the composition root is, what it owns, how a ViewModel gets its dependenci
 
 ### Navigation
 
-How the selected part id reaches the detail screen, and where the Offline switch state lives now that `Globals` is gone.
+How the selected part id reaches the detail screen, and where the Offline switch state lives now that `AppContainer` is gone.
 
 ## Alternatives considered
 

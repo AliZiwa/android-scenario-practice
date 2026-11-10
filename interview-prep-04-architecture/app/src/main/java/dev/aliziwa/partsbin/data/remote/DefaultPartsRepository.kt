@@ -17,6 +17,10 @@ class DefaultPartsRepository(
         }
     }
 
+    override fun observePart(id: String): Flow<PartRow?> {
+        return partDao.observeById(id).map { it?.toRow() }
+    }
+
     override suspend fun refreshParts() {
         val allRemoteParts = partsService.listParts()
         partDao.upsertAll(allRemoteParts.map { it.toEntity() })

@@ -42,14 +42,11 @@ class PartDetailViewModel(
         field = MutableStateFlow(false)
 
     fun load(selectedPartId: String) {
-        uiState.value = PartsDetailState.Loading
-
         viewModelScope.launch(dispatcher) {
-            try {
-                val part = repository.getPart(selectedPartId)
-                uiState.value = PartsDetailState.Loaded(part)
-            } catch (e: Exception) {
-                uiState.value = PartsDetailState.Error("Could not load part: " + e.message)
+            repository.observePart(selectedPartId).collect { part ->
+                if (part != null) {
+                    uiState.value = PartsDetailState.Loaded(part)
+                }
             }
         }
     }

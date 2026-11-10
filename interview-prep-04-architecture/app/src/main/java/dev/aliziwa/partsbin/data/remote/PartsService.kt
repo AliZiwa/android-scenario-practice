@@ -19,17 +19,23 @@ data class PartDto(
     val version: Int,
     val updatedAt: String, // ISO-8601, e.g. 2026-10-27T14:03:00Z
 ) {
-    fun toRow() = PartRow(
-        id = id,
-        sku = sku,
-        name = name,
-        quantity = quantity,
-        minQuantity = minQuantity,
-        bin = binLocation,
-        updatedAt = updatedAt,
-        version = version,
-        lowStock = quantity <= minQuantity,
-    )
+    fun toRow(): PartRow {
+        val instant = java.time.Instant.parse(updatedAt)
+        val localDateTime = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
+        val formatter = java.time.format.DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a")
+        
+        return PartRow(
+            id = id,
+            sku = sku,
+            name = name,
+            quantity = quantity,
+            minQuantity = minQuantity,
+            bin = binLocation,
+            updatedAt = localDateTime.format(formatter),
+            version = version,
+            lowStock = quantity <= minQuantity,
+        )
+    }
 
     fun toEntity() = PartEntity(
         id = id,

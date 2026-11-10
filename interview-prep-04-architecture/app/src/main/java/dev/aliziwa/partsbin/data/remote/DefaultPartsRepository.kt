@@ -41,6 +41,11 @@ class DefaultPartsRepository(
         delta: Int,
         reason: String
     ): PartRow {
+        require(reason.isNotBlank()) { "Reason required" }
+        
+        val currentStock = partDao.getById(id)?.quantity ?: 0
+        require(currentStock + delta >= 0) { "Not enough stock" }
+        
         val updated = partsService.adjust(id, AdjustRequest(delta, reason))
         partDao.upsert(updated.toEntity())
         return updated.toRow()

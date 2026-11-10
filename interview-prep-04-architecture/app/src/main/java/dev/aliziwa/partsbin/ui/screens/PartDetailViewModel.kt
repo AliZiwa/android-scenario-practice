@@ -59,14 +59,19 @@ class PartDetailViewModel(
         busy.value = true
         viewModelScope.launch(dispatcher) {
             try {
-                val updated = repository.adjust(selectedPartId, delta, reason)
-                uiState.value = PartsDetailState.Loaded(updated)
+                repository.adjust(selectedPartId, delta, reason)
+                // We no longer manually set the Loaded state here because observePart() handles it automatically.
+            } catch (e: IllegalArgumentException) {
+                uiState.value = PartsDetailState.Error(e.message ?: "Invalid adjustment")
             } catch (e: HttpException) {
                 uiState.value = PartsDetailState.Error("Server said " + e.code())
+            } catch (e: java.io.IOException) {
+                uiState.value = PartsDetailState.Error("Offline, adjustment not saved")
             } catch (e: Exception) {
                 uiState.value = PartsDetailState.Error(e.toString())
+            } finally {
+                busy.value = false
             }
         }
-        busy.value = false
     }
 }

@@ -2,6 +2,7 @@ package dev.aliziwa.partsbin.data.local.db
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import dev.aliziwa.partsbin.ui.screens.PartRow
 
 @Entity(tableName = "parts")
 data class PartEntity(
@@ -13,4 +14,16 @@ data class PartEntity(
     val binLocation: String,
     val version: Int,
     val updatedAt: String,
-)
+) {
+    fun toRow() = PartRow(
+        id = id,
+        sku = sku,
+        name = name,
+        quantity = quantity,
+        minQuantity = minQuantity,
+        bin = binLocation,
+        updatedAt = updatedAt,
+        version = version,
+        lowStock = quantity <= minQuantity,
+    )
+}

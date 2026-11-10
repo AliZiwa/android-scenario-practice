@@ -10,8 +10,12 @@ import dev.aliziwa.partsbin.data.PartsRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 /** One row of the list, ready to draw. */
 data class PartRow(
@@ -28,7 +32,7 @@ data class PartRow(
 
 sealed interface PartsListState {
     data object Loading : PartsListState
-    data class Loaded(val rows: List<PartRow>) : PartsListState
+    data class Loaded(val rows: List<PartRow>, val message: String? = null) : PartsListState
     data class Error(val message: String) : PartsListState
 }
 
@@ -47,38 +51,49 @@ class PartsListViewModel(
         }
     }
 
-    val uiState: StateFlow<PartsListState>
-        field = MutableStateFlow<PartsListState>(PartsListState.Loading)
+    val query: StateFlow<String>
+        field = MutableStateFlow("")
 
-    val query = MutableStateFlow("")
+    private val errorMessage = MutableStateFlow<String?>(null)
+
+    val uiState: StateFlow<PartsListState> = combine(
+        repository.observeParts(),
+        query,
+        errorMessage,
+    ) { parts, q, msg ->
+        val trimmedQuery = q.trim().lowercase()
+        val filteredParts = if (trimmedQuery.isEmpty()) {
+            parts
+        } else {
+            parts.filter {
+                it.sku.lowercase().contains(trimmedQuery) || it.name.lowercase().contains(trimmedQuery)
+            }
+        }
+        PartsListState.Loaded(rows = filteredParts, message = msg)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = PartsListState.Loading,
+    )
 
     init {
         load()
     }
 
     fun load() {
-        uiState.value = PartsListState.Loading
-
         viewModelScope.launch(dispatcher) {
             try {
-                uiState.value = PartsListState.Loaded(repository.listParts())
-                applyFilter()
+                repository.refreshParts()
+                errorMessage.value = null
+            } catch (e: IOException) {
+                errorMessage.value = "Offline, showing cached parts"
             } catch (e: Exception) {
-                uiState.value = PartsListState.Error("Could not load parts: " + e.message)
+                errorMessage.value = "Could not refresh"
             }
         }
     }
 
     fun onQueryChange(q: String) {
         query.value = q
-        applyFilter()
-    }
-
-    private fun applyFilter() {
-        val q = query.value.trim().lowercase()
-        if (q.isNotEmpty() && uiState.value is PartsListState.Loaded) {
-            (uiState.value as PartsListState.Loaded).rows
-                .filter { q.isEmpty() || it.sku.lowercase().contains(q) || it.name.lowercase().contains(q) }
-        }
     }
 }

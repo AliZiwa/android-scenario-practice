@@ -24,8 +24,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -41,7 +39,7 @@ fun PartsListScreen(
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
     val isOffline by offlineState.isOffline.collectAsStateWithLifecycle()
-    val query by remember { mutableStateOf("") }
+    val query by vm.query.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         vm.load()
@@ -68,12 +66,13 @@ fun PartsListScreen(
             .fillMaxSize()
             .padding(padding)) {
             val loading = uiState is PartsListState.Loading
-            val rowItems = when (uiState) {
-                is PartsListState.Loaded -> (uiState as PartsListState.Loaded).rows
+            val rowItems = when (val s = uiState) {
+                is PartsListState.Loaded -> s.rows
                 else -> emptyList()
             }
-            val message = when (uiState) {
-                is PartsListState.Error -> (uiState as PartsListState.Error).message
+            val message = when (val s = uiState) {
+                is PartsListState.Loaded -> s.message
+                is PartsListState.Error -> s.message
                 else -> null
             }
 

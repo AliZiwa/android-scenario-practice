@@ -64,7 +64,17 @@ class PartDetailViewModel(
             } catch (e: IllegalArgumentException) {
                 uiState.value = PartsDetailState.Error(e.message ?: "Invalid adjustment")
             } catch (e: HttpException) {
-                uiState.value = PartsDetailState.Error("Server said " + e.code())
+                if (e.code() == 422) {
+                    try {
+                        val errorString = e.response()?.errorBody()?.string()
+                        val errorBody = kotlinx.serialization.json.Json.decodeFromString<dev.aliziwa.partsbin.data.remote.ErrorBody>(errorString ?: "")
+                        uiState.value = PartsDetailState.Error(errorBody.error)
+                    } catch (parseEx: Exception) {
+                        uiState.value = PartsDetailState.Error("Server said " + e.code())
+                    }
+                } else {
+                    uiState.value = PartsDetailState.Error("Server said " + e.code())
+                }
             } catch (e: java.io.IOException) {
                 uiState.value = PartsDetailState.Error("Offline, adjustment not saved")
             } catch (e: Exception) {

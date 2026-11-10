@@ -1,6 +1,5 @@
 package dev.aliziwa.partsbin.data.remote
 
-import dev.aliziwa.partsbin.AppContainer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
@@ -28,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap
  *  - When [AppContainer.offline] is true every request throws an [IOException], the way a dead radio would.
  */
 class FakePartsBackend(
+    private val offlineState: OfflineState = OfflineState(),
     private val latencyMs: Long = 350,
 ) : Interceptor {
 
@@ -39,7 +39,7 @@ class FakePartsBackend(
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         Thread.sleep(latencyMs)
-        if (AppContainer.offline.value) throw IOException("Unable to resolve host inventory.example")
+        if (offlineState.isOffline.value) throw IOException("Unable to resolve host inventory.example")
 
         val segments = request.url.pathSegments.filter { it.isNotEmpty() }
         return when {

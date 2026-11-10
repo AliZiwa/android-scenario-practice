@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import dev.aliziwa.partsbin.AppContainer
+import dev.aliziwa.partsbin.AppDependencyContainer
 import dev.aliziwa.partsbin.ui.screens.PartDetailScreen
 import dev.aliziwa.partsbin.ui.screens.PartDetailViewModel
 import dev.aliziwa.partsbin.ui.screens.PartsListScreen
@@ -22,12 +22,13 @@ data class PartsDetail(
 )
 
 @Composable
-fun PartsBinNavHost(container: AppContainer) {
+fun PartsBinNavHost(container: AppDependencyContainer) {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = PartsList) {
         composable<PartsList> {
             PartsListScreen(
+                offlineState = container.offlineState,
                 vm = viewModel(factory = PartsListViewModel.Factory),
                 onOpenPart = { navController.navigate(PartsDetail(it)) }
             )

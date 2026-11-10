@@ -26,25 +26,22 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.aliziwa.partsbin.AppContainer
-import dev.aliziwa.partsbin.data.PartsRepository
+import dev.aliziwa.partsbin.data.remote.OfflineState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PartsListScreen(
+    offlineState: OfflineState,
     vm: PartsListViewModel,
     onOpenPart: (String) -> Unit
 ) {
     val uiState by vm.uiState.collectAsStateWithLifecycle()
+    val isOffline by offlineState.isOffline.collectAsStateWithLifecycle()
     val query by remember { mutableStateOf("") }
-    var offline by remember { AppContainer.offline }
-
 
     LaunchedEffect(Unit) {
         vm.load()
@@ -57,9 +54,9 @@ fun PartsListScreen(
                 actions = {
                     Text("Offline", style = MaterialTheme.typography.labelMedium)
                     Switch(
-                        checked = offline,
+                        checked = isOffline,
                         onCheckedChange = {
-                            offline = it
+                            offlineState.isOffline.value = it
                         },
                     )
                     TextButton(onClick = { vm.load() }) { Text("Refresh") }

@@ -2,7 +2,7 @@ package dev.aliziwa.partsbin.data.local.db
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import dev.aliziwa.partsbin.ui.screens.PartRow
+import dev.aliziwa.partsbin.domain.PartRow
 
 @Entity(tableName = "parts")
 data class PartEntity(

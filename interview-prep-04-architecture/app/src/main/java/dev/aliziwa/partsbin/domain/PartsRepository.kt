@@ -1,6 +1,5 @@
-package dev.aliziwa.partsbin.data
+package dev.aliziwa.partsbin.domain
 
-import dev.aliziwa.partsbin.ui.screens.PartRow
 import kotlinx.coroutines.flow.Flow
 
 interface PartsRepository {

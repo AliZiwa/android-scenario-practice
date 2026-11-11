@@ -28,7 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.aliziwa.partsbin.data.remote.OfflineState
+import dev.aliziwa.partsbin.domain.OfflineState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,6 +1,7 @@
 package dev.aliziwa.partsbin.data.remote
 
 import kotlinx.serialization.json.Json
+import dev.aliziwa.partsbin.domain.OfflineState
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive

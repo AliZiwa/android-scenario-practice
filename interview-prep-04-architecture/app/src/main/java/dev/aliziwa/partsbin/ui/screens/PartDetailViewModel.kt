@@ -6,13 +6,13 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.aliziwa.partsbin.PartsBinApp
-import dev.aliziwa.partsbin.data.PartsRepository
+import dev.aliziwa.partsbin.domain.PartRow
+import dev.aliziwa.partsbin.domain.PartsRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
 
 sealed interface PartsDetailState {
     data object Loading : PartsDetailState
@@ -63,18 +63,8 @@ class PartDetailViewModel(
                 // We no longer manually set the Loaded state here because observePart() handles it automatically.
             } catch (e: IllegalArgumentException) {
                 uiState.value = PartsDetailState.Error(e.message ?: "Invalid adjustment")
-            } catch (e: HttpException) {
-                if (e.code() == 422) {
-                    try {
-                        val errorString = e.response()?.errorBody()?.string()
-                        val errorBody = kotlinx.serialization.json.Json.decodeFromString<dev.aliziwa.partsbin.data.remote.ErrorBody>(errorString ?: "")
-                        uiState.value = PartsDetailState.Error(errorBody.error)
-                    } catch (parseEx: Exception) {
-                        uiState.value = PartsDetailState.Error("Server said " + e.code())
-                    }
-                } else {
-                    uiState.value = PartsDetailState.Error("Server said " + e.code())
-                }
+            } catch (e: dev.aliziwa.partsbin.domain.ServerException) {
+                uiState.value = PartsDetailState.Error(e.message ?: "Server Error")
             } catch (e: java.io.IOException) {
                 uiState.value = PartsDetailState.Error("Offline, adjustment not saved")
             } catch (e: Exception) {

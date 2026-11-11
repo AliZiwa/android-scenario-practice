@@ -6,7 +6,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.aliziwa.partsbin.PartsBinApp
-import dev.aliziwa.partsbin.data.PartsRepository
+import dev.aliziwa.partsbin.domain.PartRow
+import dev.aliziwa.partsbin.domain.PartsRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,19 +17,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.IOException
-
-/** One row of the list, ready to draw. */
-data class PartRow(
-    val id: String,
-    val sku: String,
-    val name: String,
-    val quantity: Int,
-    val minQuantity: Int = 0,
-    val updatedAt: String = "",
-    val bin: String,
-    val lowStock: Boolean,
-    val version: Int = 0,
-)
 
 sealed interface PartsListState {
     data object Loading : PartsListState

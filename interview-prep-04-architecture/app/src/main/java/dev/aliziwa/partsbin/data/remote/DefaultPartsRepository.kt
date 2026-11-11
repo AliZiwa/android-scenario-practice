@@ -1,8 +1,8 @@
 package dev.aliziwa.partsbin.data.remote
 
-import dev.aliziwa.partsbin.data.PartsRepository
 import dev.aliziwa.partsbin.data.local.db.PartDao
-import dev.aliziwa.partsbin.ui.screens.PartRow
+import dev.aliziwa.partsbin.domain.PartRow
+import dev.aliziwa.partsbin.domain.PartsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -46,8 +46,22 @@ class DefaultPartsRepository(
         val currentStock = partDao.getById(id)?.quantity ?: 0
         require(currentStock + delta >= 0) { "Not enough stock" }
         
-        val updated = partsService.adjust(id, AdjustRequest(delta, reason))
-        partDao.upsert(updated.toEntity())
-        return updated.toRow()
+        try {
+            val updated = partsService.adjust(id, AdjustRequest(delta, reason))
+            partDao.upsert(updated.toEntity())
+            return updated.toRow()
+        } catch (e: retrofit2.HttpException) {
+            if (e.code() == 422) {
+                try {
+                    val errorString = e.response()?.errorBody()?.string()
+                    val errorBody = kotlinx.serialization.json.Json.decodeFromString<ErrorBody>(errorString ?: "")
+                    throw dev.aliziwa.partsbin.domain.ServerException(errorBody.error)
+                } catch (parseEx: Exception) {
+                    throw dev.aliziwa.partsbin.domain.ServerException("Server said " + e.code())
+                }
+            } else {
+                throw dev.aliziwa.partsbin.domain.ServerException("Server said " + e.code())
+            }
+        }
     }
 }

@@ -1,7 +1,7 @@
 package dev.aliziwa.partsbin.data.remote
 
 import dev.aliziwa.partsbin.data.local.db.PartEntity
-import dev.aliziwa.partsbin.ui.screens.PartRow
+import dev.aliziwa.partsbin.domain.PartRow
 import kotlinx.serialization.Serializable
 import retrofit2.http.Body
 import retrofit2.http.GET

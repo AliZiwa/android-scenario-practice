@@ -3,11 +3,11 @@ package dev.aliziwa.partsbin
 import android.app.Application
 import android.content.Context
 import androidx.room.Room
-import dev.aliziwa.partsbin.data.PartsRepository
+import dev.aliziwa.partsbin.domain.PartsRepository
 import dev.aliziwa.partsbin.data.local.db.PartsDatabase
 import dev.aliziwa.partsbin.data.remote.DefaultPartsRepository
 import dev.aliziwa.partsbin.data.remote.FakePartsBackend
-import dev.aliziwa.partsbin.data.remote.OfflineState
+import dev.aliziwa.partsbin.domain.OfflineState
 import dev.aliziwa.partsbin.data.remote.PartsService
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType

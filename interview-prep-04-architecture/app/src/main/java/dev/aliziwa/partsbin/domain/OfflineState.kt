@@ -1,4 +1,4 @@
-package dev.aliziwa.partsbin.data.remote
+package dev.aliziwa.partsbin.domain
 
 import kotlinx.coroutines.flow.MutableStateFlow
 

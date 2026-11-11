@@ -1,4 +1,4 @@
-package dev.aliziwa.partsbin.db
+package dev.aliziwa.partsbin.data.local.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase

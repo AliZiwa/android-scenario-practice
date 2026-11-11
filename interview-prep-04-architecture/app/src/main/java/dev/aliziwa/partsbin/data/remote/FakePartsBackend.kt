@@ -1,8 +1,7 @@
-package dev.aliziwa.partsbin.net
+package dev.aliziwa.partsbin.data.remote
 
-import dev.aliziwa.partsbin.Globals
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import dev.aliziwa.partsbin.domain.OfflineState
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -26,9 +25,10 @@ import java.util.concurrent.ConcurrentHashMap
  *  - `POST /parts/{id}/adjust` with `{"delta": n, "reason": "..."}` applies the delta, bumps `version`
  *    and `updatedAt`, and returns the part. Blank reason: 422 `reason_required`. Result below zero:
  *    422 `insufficient_stock`. Unknown id: 404.
- *  - When [Globals.offline] is true every request throws an [IOException], the way a dead radio would.
+ *  - When `OfflineState.isOffline` is true every request throws an [IOException], the way a dead radio would.
  */
 class FakePartsBackend(
+    private val offlineState: OfflineState = OfflineState(),
     private val latencyMs: Long = 350,
 ) : Interceptor {
 
@@ -40,7 +40,7 @@ class FakePartsBackend(
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         Thread.sleep(latencyMs)
-        if (Globals.offline) throw IOException("Unable to resolve host inventory.example")
+        if (offlineState.isOffline.value) throw IOException("Unable to resolve host inventory.example")
 
         val segments = request.url.pathSegments.filter { it.isNotEmpty() }
         return when {

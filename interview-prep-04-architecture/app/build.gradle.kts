@@ -43,6 +43,8 @@ ksp {
 }
 
 dependencies {
+    // Jetpack Compose Integration
+    implementation(libs.androidx.navigation.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

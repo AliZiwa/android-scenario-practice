@@ -1,7 +1,7 @@
 package dev.aliziwa.partsbin
 
-import dev.aliziwa.partsbin.db.PartDao
-import dev.aliziwa.partsbin.db.PartEntity
+import dev.aliziwa.partsbin.data.local.db.PartDao
+import dev.aliziwa.partsbin.data.local.db.PartEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map

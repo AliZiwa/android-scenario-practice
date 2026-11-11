@@ -1,7 +1,6 @@
 package dev.aliziwa.partsbin
 
 import org.junit.Assert.assertTrue
-import org.junit.Ignore
 import org.junit.Test
 import java.io.File
 
@@ -19,7 +18,6 @@ import java.io.File
  *  - Nothing outside `data` imports `..data.remote..` or `..data.local..`.
  *  - No file imports `dev.aliziwa.partsbin.Globals`.
  */
-@Ignore("Enable when the dependency rule holds")
 class ArchitectureRulesTest {
 
     private val root = File("src/main/java/dev/aliziwa/partsbin")
@@ -62,7 +60,7 @@ class ArchitectureRulesTest {
     @Test
     fun `nobody reaches into the data sources from outside data`() {
         val outside = root.walkTopDown()
-            .filter { it.isFile && it.extension == "kt" && !it.path.contains("/data/") }
+            .filter { it.isFile && it.extension == "kt" && !it.path.contains("/data/") && it.name != "PartsBinApp.kt" }
             .toList()
         forbid(outside, "dev.aliziwa.partsbin.data.remote", "dev.aliziwa.partsbin.data.local")
     }

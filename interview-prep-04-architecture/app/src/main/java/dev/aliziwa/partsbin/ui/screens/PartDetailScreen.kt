@@ -94,8 +94,8 @@ fun PartDetailScreen(
                         ) { Text("Restock") }
                     }
 
-                    if (message != null) {
-                        InformationMessage(message = message!!, color = MaterialTheme.colorScheme.primary) {
+                    message?.let { msg ->
+                        InformationMessage(message = msg, color = MaterialTheme.colorScheme.primary) {
                             vm.dismissMessage()
                         }
                     }

@@ -81,6 +81,9 @@ class PartDetailViewModel(
                 is AdjustmentResult.ServerRejected -> {
                     message.value = result.message
                 }
+                is AdjustmentResult.NotFound -> {
+                    message.value = "Part not found locally"
+                }
                 is AdjustmentResult.Offline -> {
                     message.value = "Offline, adjustment not saved"
                 }

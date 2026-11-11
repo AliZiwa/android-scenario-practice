@@ -4,6 +4,7 @@ import dev.aliziwa.partsbin.data.local.db.PartDao
 import dev.aliziwa.partsbin.domain.AdjustmentResult
 import dev.aliziwa.partsbin.domain.Part
 import dev.aliziwa.partsbin.domain.PartsRepository
+import dev.aliziwa.partsbin.domain.RefreshResult
 import dev.aliziwa.partsbin.domain.validateAdjustment
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -27,9 +28,16 @@ class DefaultPartsRepository(
         return partDao.observeById(id).map { it?.toDomain() }
     }
 
-    override suspend fun refreshParts() {
-        val allRemoteParts = partsService.listParts()
-        partDao.upsertAll(allRemoteParts.map { it.toEntity() })
+    override suspend fun refreshParts(): RefreshResult {
+        return try {
+            val allRemoteParts = partsService.listParts()
+            partDao.upsertAll(allRemoteParts.map { it.toEntity() })
+            RefreshResult.Success
+        } catch (e: IOException) {
+            RefreshResult.Offline
+        } catch (e: Exception) {
+            RefreshResult.Error(e.message ?: "Unknown error")
+        }
     }
 
     override suspend fun adjust(
@@ -37,7 +45,7 @@ class DefaultPartsRepository(
         delta: Int,
         reason: String
     ): AdjustmentResult {
-        val currentPart = partDao.getById(id)?.toDomain() ?: return AdjustmentResult.ServerRejected("Part not found locally")
+        val currentPart = partDao.getById(id)?.toDomain() ?: return AdjustmentResult.NotFound
         
         val validationError = currentPart.validateAdjustment(delta, reason)
         if (validationError != null) {

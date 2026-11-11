@@ -1,8 +1,6 @@
 # ADR 001: PartsBin application architecture
 
-Status: Proposed · Date: November 11, 2026 · Author: Ali Ziwa
-
-Keep this to about a page. Write it before the code, and update it when the code teaches you something. Where this document and the code disagree at review time, the document loses.
+Status: Accepted · Date: November 11, 2026 · Author: Ali Ziwa
 
 ## Context
 
@@ -29,7 +27,7 @@ ui (View, Compose, ViewModels, UI Models)  -->  domain (Models, Interfaces, Exce
 - **Adjustment validation**: `validateAdjustment()` in the domain layer, producing an `AdjustmentError`.
 - **DTO/Entity to model mapping**: `PartDto.toEntity()` and `PartEntity.toDomain()`.
 - **Date formatting**: `PartMapper.toRow()` using `java.time` in the `ui` package.
-- **"Offline, showing cached" decision**: `PartsListViewModel.load()` handles `AdjustmentResult.Offline` or offline exceptions.
+- **"Offline, showing cached" decision**: `PartsListViewModel.load()` handles `RefreshResult.Offline` or offline exceptions.
 
 ### Source of truth and sync
 
@@ -74,4 +72,4 @@ ui (View, Compose, ViewModels, UI Models)  -->  domain (Models, Interfaces, Exce
 
 ## What you did not finish
 
-Everything inside the behavior contract was finished. Future steps like the sync queue and workmanager are deliberately out of scope for this foundational architecture task.
+While the behavioral contract is complete, the `refreshParts` signature across the boundary is currently returning a `RefreshResult` sealed class, but we still catch network IO/Http exceptions inside the repository. The scope for the future sync queue and local caching adjustments as "pending" has not been done since it was excluded from the strict three-hour timebox.

@@ -4,6 +4,7 @@ sealed interface AdjustmentResult {
     data class Success(val part: Part) : AdjustmentResult
     data class Rejected(val reason: AdjustmentError) : AdjustmentResult
     data class ServerRejected(val message: String) : AdjustmentResult
+    data object NotFound : AdjustmentResult
     data object Offline : AdjustmentResult
 }
 

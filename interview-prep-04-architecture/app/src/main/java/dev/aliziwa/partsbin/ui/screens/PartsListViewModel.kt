@@ -7,17 +7,15 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.aliziwa.partsbin.PartsBinApp
 import dev.aliziwa.partsbin.domain.PartsRepository
+import dev.aliziwa.partsbin.domain.RefreshResult
 import dev.aliziwa.partsbin.ui.mappers.toRow
 import dev.aliziwa.partsbin.ui.models.PartRow
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.io.IOException
 
 sealed interface PartsListState {
     data object Loading : PartsListState
@@ -26,7 +24,6 @@ sealed interface PartsListState {
 
 class PartsListViewModel(
     private val repository: PartsRepository,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
 
     companion object {
@@ -39,8 +36,8 @@ class PartsListViewModel(
         }
     }
 
-    val query: StateFlow<String>
-        field = MutableStateFlow("")
+    private val _query = MutableStateFlow("")
+    val query: StateFlow<String> = _query
 
     private val errorMessage = MutableStateFlow<String?>(null)
 
@@ -69,19 +66,17 @@ class PartsListViewModel(
     }
 
     fun load() {
-        viewModelScope.launch(dispatcher) {
-            try {
-                repository.refreshParts()
-                errorMessage.value = null
-            } catch (e: IOException) {
-                errorMessage.value = "Offline, showing cached parts"
-            } catch (e: Exception) {
-                errorMessage.value = "Could not refresh"
+        viewModelScope.launch {
+            val result = repository.refreshParts()
+            when (result) {
+                is RefreshResult.Success -> errorMessage.value = null
+                is RefreshResult.Offline -> errorMessage.value = "Offline, showing cached parts"
+                is RefreshResult.Error -> errorMessage.value = "Could not refresh"
             }
         }
     }
 
     fun onQueryChange(q: String) {
-        query.value = q
+        _query.value = q
     }
 }

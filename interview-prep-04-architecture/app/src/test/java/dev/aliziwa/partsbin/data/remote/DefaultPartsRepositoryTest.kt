@@ -55,12 +55,8 @@ class DefaultPartsRepositoryTest {
         
         dao.upsert(PartEntity("p-01", "SKU1", "Name", 10, 5, "Bin", 1, "2026-10-27T14:03:00Z"))
         
-        try {
-            repository.refreshParts()
-            org.junit.Assert.fail("Expected IOException")
-        } catch (e: java.io.IOException) {
-            // expected
-        }
+        val result = repository.refreshParts()
+        assertTrue(result is dev.aliziwa.partsbin.domain.RefreshResult.Offline)
 
         assertEquals(1, dao.getAll().size)
     }

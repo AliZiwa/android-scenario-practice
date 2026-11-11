@@ -2,27 +2,33 @@ package dev.aliziwa.partsbin.ui.screens
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.navigation.toRoute
 import dev.aliziwa.partsbin.PartsBinApp
-import dev.aliziwa.partsbin.domain.PartRow
+import dev.aliziwa.partsbin.domain.AdjustmentError
+import dev.aliziwa.partsbin.domain.AdjustmentResult
 import dev.aliziwa.partsbin.domain.PartsRepository
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
+import dev.aliziwa.partsbin.ui.PartsDetail
+import dev.aliziwa.partsbin.ui.mappers.toRow
+import dev.aliziwa.partsbin.ui.models.PartRow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 sealed interface PartsDetailState {
     data object Loading : PartsDetailState
-    data class Loaded(val rowItem: PartRow, val message: String? = null) : PartsDetailState
-    data class Error(val message: String) : PartsDetailState
+    data class Loaded(val rowItem: PartRow) : PartsDetailState
 }
 
 class PartDetailViewModel(
     private val repository: PartsRepository,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val selectedPartId: String
 ) : ViewModel() {
 
     companion object {
@@ -30,64 +36,56 @@ class PartDetailViewModel(
             initializer {
                 val app = this[APPLICATION_KEY] as PartsBinApp
                 val repository = app.container.partsRepository
-                PartDetailViewModel(repository)
+                val savedStateHandle = createSavedStateHandle()
+                val id = savedStateHandle.toRoute<PartsDetail>().selectedPartId
+                PartDetailViewModel(repository, id)
             }
         }
     }
 
-    val uiState: StateFlow<PartsDetailState>
-        field = MutableStateFlow<PartsDetailState>(PartsDetailState.Loading)
+    val uiState: StateFlow<PartsDetailState> = repository.observePart(selectedPartId)
+        .map { part -> 
+            if (part != null) PartsDetailState.Loaded(part.toRow()) 
+            else PartsDetailState.Loading 
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = PartsDetailState.Loading
+        )
+
+    val message: StateFlow<String?> 
+        field = MutableStateFlow<String?>(null)
 
     val busy: StateFlow<Boolean>
         field = MutableStateFlow(false)
 
-    fun load(selectedPartId: String) {
-        viewModelScope.launch(dispatcher) {
-            repository.observePart(selectedPartId).collect { part ->
-                if (part != null) {
-                    val currentMessage = (uiState.value as? PartsDetailState.Loaded)?.message
-                    uiState.value = PartsDetailState.Loaded(part, currentMessage)
-                }
-            }
-        }
+    fun dismissMessage() {
+        message.value = null
     }
 
-    fun adjust(selectedPartId: String, delta: Int, reason: String) {
+    fun adjust(delta: Int, reason: String) {
         busy.value = true
-        viewModelScope.launch(dispatcher) {
-            try {
-                repository.adjust(selectedPartId, delta, reason)
-            } catch (e: IllegalArgumentException) {
-                if (uiState.value is PartsDetailState.Loaded) {
-                     val currentPart = (uiState.value as PartsDetailState.Loaded).rowItem
-                     uiState.value = PartsDetailState.Loaded(currentPart, e.message ?: "Invalid adjustment")
-                } else {
-                     uiState.value = PartsDetailState.Error(e.message ?: "Invalid adjustment")
+        viewModelScope.launch {
+            val result = repository.adjust(selectedPartId, delta, reason)
+            when (result) {
+                is AdjustmentResult.Success -> {
+                    message.value = "Stock now ${result.part.quantity}"
                 }
-            } catch (e: dev.aliziwa.partsbin.domain.ServerException) {
-                if (uiState.value is PartsDetailState.Loaded) {
-                     val currentPart = (uiState.value as PartsDetailState.Loaded).rowItem
-                     uiState.value = PartsDetailState.Loaded(currentPart, e.message ?: "Server Error")
-                } else {
-                     uiState.value = PartsDetailState.Error(e.message ?: "Server Error")
+                is AdjustmentResult.Rejected -> {
+                    message.value = when (result.reason) {
+                        AdjustmentError.REASON_REQUIRED -> "Reason required"
+                        AdjustmentError.INSUFFICIENT_STOCK -> "Not enough stock"
+                    }
                 }
-            } catch (e: java.io.IOException) {
-                if (uiState.value is PartsDetailState.Loaded) {
-                     val currentPart = (uiState.value as PartsDetailState.Loaded).rowItem
-                     uiState.value = PartsDetailState.Loaded(currentPart, "Offline, adjustment not saved")
-                } else {
-                     uiState.value = PartsDetailState.Error("Offline, adjustment not saved")
+                is AdjustmentResult.ServerRejected -> {
+                    message.value = result.message
                 }
-            } finally {
-                busy.value = false
+                is AdjustmentResult.Offline -> {
+                    message.value = "Offline, adjustment not saved"
+                }
             }
-        }
-    }
-    
-    fun dismissMessage() {
-        if (uiState.value is PartsDetailState.Loaded) {
-            val currentPart = (uiState.value as PartsDetailState.Loaded).rowItem
-            uiState.value = PartsDetailState.Loaded(currentPart, null)
+            busy.value = false
         }
     }
 }

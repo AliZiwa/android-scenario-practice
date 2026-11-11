@@ -6,8 +6,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.aliziwa.partsbin.PartsBinApp
-import dev.aliziwa.partsbin.domain.PartRow
 import dev.aliziwa.partsbin.domain.PartsRepository
+import dev.aliziwa.partsbin.ui.mappers.toRow
+import dev.aliziwa.partsbin.ui.models.PartRow
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,7 +57,7 @@ class PartsListViewModel(
                 it.sku.lowercase().contains(trimmedQuery) || it.name.lowercase().contains(trimmedQuery)
             }
         }
-        PartsListState.Loaded(rows = filteredParts, message = msg)
+        PartsListState.Loaded(rows = filteredParts.map { it.toRow() }, message = msg)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),

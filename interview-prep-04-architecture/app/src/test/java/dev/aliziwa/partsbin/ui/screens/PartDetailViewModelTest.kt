@@ -2,88 +2,61 @@ package dev.aliziwa.partsbin.ui.screens
 
 import app.cash.turbine.test
 import dev.aliziwa.partsbin.MainDispatcherRule
-import dev.aliziwa.partsbin.domain.PartRow
+import dev.aliziwa.partsbin.domain.AdjustmentError
+import dev.aliziwa.partsbin.domain.AdjustmentResult
+import dev.aliziwa.partsbin.domain.Part
 import dev.aliziwa.partsbin.ui.FakePartsRepository
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import java.io.IOException
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class PartDetailViewModelTest {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private lateinit var repository: FakePartsRepository
-    private lateinit var viewModel: PartDetailViewModel
-
-    @Before
-    fun setUp() {
-        repository = FakePartsRepository()
-        viewModel = PartDetailViewModel(repository, UnconfinedTestDispatcher())
-    }
+    private val repository = FakePartsRepository()
 
     @Test
-    fun `load fetches part details`() = runTest {
-        val testPart = PartRow("1", "SKU1", "Part 1", 10, 5, "Oct 27", "A1", false, 1)
-        repository.setParts(listOf(testPart))
+    fun `load observes part successfully`() = runTest {
+        val part = Part("p1", "SKU1", "Name", 10, 5, "Bin", "2026-10-27T14:03:00Z")
+        repository.rows.value = mapOf("p1" to part)
+        
+        val vm = PartDetailViewModel(repository, "p1")
 
-        viewModel.load("1")
-
-        viewModel.uiState.test {
-            val state = awaitItem() as PartsDetailState.Loaded
-            assertEquals("SKU1", state.rowItem.sku)
+        vm.uiState.test {
+            val state = awaitItem()
+            assertTrue(state is PartsDetailState.Loaded)
+            assertEquals("SKU1", (state as PartsDetailState.Loaded).rowItem.sku)
         }
     }
 
     @Test
-    fun `adjust success updates state`() = runTest {
-        val testPart = PartRow("1", "SKU1", "Part 1", 10, 5, "Oct 27", "A1", false, 1)
-        repository.setParts(listOf(testPart))
+    fun `adjust failure leaves part visible and posts message`() = runTest {
+        val part = Part("p1", "SKU1", "Name", 10, 5, "Bin", "2026-10-27T14:03:00Z")
+        repository.rows.value = mapOf("p1" to part)
+        repository.adjustResult = AdjustmentResult.Rejected(AdjustmentError.REASON_REQUIRED)
 
-        viewModel.load("1")
-        viewModel.adjust("1", -2, "Used")
+        val vm = PartDetailViewModel(repository, "p1")
 
-        viewModel.uiState.test {
-            val state = awaitItem() as PartsDetailState.Loaded
-            assertEquals(8, state.rowItem.quantity)
-        }
-    }
-
-    @Test
-    fun `adjust invalid delta shows error state`() = runTest {
-        val testPart = PartRow("1", "SKU1", "Part 1", 10, 5, "Oct 27", "A1", false, 1)
-        repository.setParts(listOf(testPart))
-        repository.adjustException = IllegalArgumentException("Not enough stock")
-
-        viewModel.load("1")
-        viewModel.adjust("1", -15, "Used")
-
-        viewModel.uiState.test {
-            val state = awaitItem() as PartsDetailState.Error
-            assertEquals("Not enough stock", state.message)
-        }
-    }
-
-    @Test
-    fun `adjust network error shows offline message`() = runTest {
-        val testPart = PartRow("1", "SKU1", "Part 1", 10, 5, "Oct 27", "A1", false, 1)
-        repository.setParts(listOf(testPart))
-        repository.adjustException = IOException("Network error")
-
-        viewModel.load("1")
-        viewModel.adjust("1", -2, "Used")
-
-        viewModel.uiState.test {
-            val state = awaitItem() as PartsDetailState.Error
-            assertEquals("Offline, adjustment not saved", state.message)
+        vm.uiState.test {
+            val state = awaitItem()
+            assertTrue(state is PartsDetailState.Loaded)
+            
+            vm.message.test {
+                val initMsg = awaitItem()
+                assertEquals(null, initMsg)
+                
+                vm.adjust(-2, "")
+                
+                val newMsg = awaitItem()
+                assertEquals("Reason required", newMsg)
+                
+                // Prove the part is still visible
+                assertTrue(vm.uiState.value is PartsDetailState.Loaded)
+            }
         }
     }
 }

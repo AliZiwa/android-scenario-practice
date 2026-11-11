@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
  *  - `POST /parts/{id}/adjust` with `{"delta": n, "reason": "..."}` applies the delta, bumps `version`
  *    and `updatedAt`, and returns the part. Blank reason: 422 `reason_required`. Result below zero:
  *    422 `insufficient_stock`. Unknown id: 404.
- *  - When [dev.aliziwa.partsbin.domain.OfflineState.isOffline] is true every request throws an [IOException], the way a dead radio would.
+ *  - When `OfflineState.isOffline` is true every request throws an [IOException], the way a dead radio would.
  */
 class FakePartsBackend(
     private val offlineState: OfflineState = OfflineState(),

@@ -6,8 +6,8 @@ data class Part(
     val name: String,
     val quantity: Int,
     val minQuantity: Int,
-    val updatedAt: String,
     val bin: String,
+    val updatedAt: String,
     val version: Int = 0,
 ) {
     val lowStock: Boolean

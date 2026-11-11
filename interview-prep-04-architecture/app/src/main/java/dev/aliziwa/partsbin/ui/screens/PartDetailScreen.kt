@@ -19,8 +19,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,16 +32,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun PartDetailScreen(
     vm: PartDetailViewModel,
-    selectedPartId: String,
     onBack: () -> Unit
 ) {
     var reason by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("1") }
     val busy by vm.busy.collectAsStateWithLifecycle()
     val uiState by vm.uiState.collectAsStateWithLifecycle()
+    val message by vm.message.collectAsStateWithLifecycle()
     val part = (uiState as? PartsDetailState.Loaded)?.rowItem
-
-    LaunchedEffect(Unit) { vm.load(selectedPartId) }
 
     Scaffold(
         topBar = {
@@ -57,60 +53,52 @@ fun PartDetailScreen(
             .fillMaxSize()
             .padding(padding)
             .padding(16.dp)) {
-            when (uiState) {
+            when (val s = uiState) {
                 PartsDetailState.Loading -> CircularProgressIndicator()
                 is PartsDetailState.Loaded -> {
-                    (uiState as PartsDetailState.Loaded).let { loaded ->
-                        val p = loaded.rowItem
-                        Text(p.name, style = MaterialTheme.typography.titleLarge)
-                        Text("Bin " + p.bin, style = MaterialTheme.typography.bodyMedium)
-                        Text(
-                            "In stock: " + p.quantity + " (min " + p.minQuantity + ")" + if (p.lowStock) "  LOW STOCK" else "",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = if (p.lowStock) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
-                        )
-                        Text(
-                            "Updated " + p.updatedAt + ", v" + p.version,
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                        Spacer(Modifier.height(16.dp))
-                        OutlinedTextField(
-                            value = amount,
-                            onValueChange = { amount = it },
-                            label = { Text("Amount") },
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                        OutlinedTextField(
-                            value = reason,
-                            onValueChange = { reason = it },
-                            label = { Text("Reason") },
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                        Spacer(Modifier.height(8.dp))
-                        Row {
-                            Button(
-                                enabled = !busy,
-                                onClick = { vm.adjust(selectedPartId,-(amount.toIntOrNull() ?: 0), reason) },
-                            ) { Text("Use") }
-                            Spacer(Modifier.width(8.dp))
-                            OutlinedButton(
-                                enabled = !busy,
-                                onClick = { vm.adjust(selectedPartId,amount.toIntOrNull() ?: 0, reason) },
-                            ) { Text("Restock") }
-                        }
+                    val p = s.rowItem
+                    Text(p.name, style = MaterialTheme.typography.titleLarge)
+                    Text("Bin " + p.bin, style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        "In stock: " + p.quantity + " (min " + p.minQuantity + ")" + if (p.lowStock) "  LOW STOCK" else "",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (p.lowStock) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        "Updated " + p.updatedAt + ", v" + p.version,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = amount,
+                        onValueChange = { amount = it },
+                        label = { Text("Amount") },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    OutlinedTextField(
+                        value = reason,
+                        onValueChange = { reason = it },
+                        label = { Text("Reason") },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Row {
+                        Button(
+                            enabled = !busy,
+                            onClick = { vm.adjust(-(amount.toIntOrNull() ?: 0), reason) },
+                        ) { Text("Use") }
+                        Spacer(Modifier.width(8.dp))
+                        OutlinedButton(
+                            enabled = !busy,
+                            onClick = { vm.adjust(amount.toIntOrNull() ?: 0, reason) },
+                        ) { Text("Restock") }
+                    }
 
-                        val message = loaded.message
-                        if (message != null) {
-                            InformationMessage(message = message, color = MaterialTheme.colorScheme.primary) {
-                                vm.dismissMessage()
-                            }
+                    if (message != null) {
+                        InformationMessage(message = message!!, color = MaterialTheme.colorScheme.primary) {
+                            vm.dismissMessage()
                         }
                     }
-                }
-                is PartsDetailState.Error -> {
-                    val message = (uiState as PartsDetailState.Error).message
-                    Text(message, color = MaterialTheme.colorScheme.error)
-                    InformationMessage(message, MaterialTheme.colorScheme.error) { }
                 }
             }
         }

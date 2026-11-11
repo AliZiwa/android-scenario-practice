@@ -2,72 +2,50 @@ package dev.aliziwa.partsbin.ui.screens
 
 import app.cash.turbine.test
 import dev.aliziwa.partsbin.MainDispatcherRule
-import dev.aliziwa.partsbin.domain.PartRow
+import dev.aliziwa.partsbin.domain.Part
 import dev.aliziwa.partsbin.ui.FakePartsRepository
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Before
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import java.io.IOException
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class PartsListViewModelTest {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private lateinit var repository: FakePartsRepository
-    private lateinit var viewModel: PartsListViewModel
-
-    @Before
-    fun setUp() {
-        repository = FakePartsRepository()
-        viewModel = PartsListViewModel(repository, UnconfinedTestDispatcher())
-    }
+    private val repository = FakePartsRepository()
 
     @Test
-    fun `initial load gets parts from repository`() = runTest {
-        val testPart = PartRow("1", "SKU1", "Part 1", 10, 5, "Oct 27", "A1", false, 1)
-        repository.setParts(listOf(testPart))
+    fun `initial load succeeds and filters by query`() = runTest {
+        val part = Part("p1", "SKU1", "Name", 10, 5, "Bin", "2026-10-27T14:03:00Z")
+        repository.rows.value = mapOf("p1" to part)
 
-        viewModel.uiState.test {
-            val state = awaitItem() as PartsListState.Loaded
-            assertEquals(1, state.rows.size)
-            assertEquals("SKU1", state.rows[0].sku)
+        val vm = PartsListViewModel(repository, mainDispatcherRule.dispatcher)
+
+        vm.uiState.test {
+            val initialState = awaitItem()
+            assertTrue(initialState is PartsListState.Loaded)
+            assertEquals(1, (initialState as PartsListState.Loaded).rows.size)
+
+            vm.onQueryChange("XYZ")
+            val filteredState = awaitItem()
+            assertTrue(filteredState is PartsListState.Loaded)
+            assertEquals(0, (filteredState as PartsListState.Loaded).rows.size)
         }
     }
 
     @Test
-    fun `load network failure shows cached parts with offline message`() = runTest {
-        repository.shouldFailRefresh = true
-        val testPart = PartRow("1", "SKU1", "Part 1", 10, 5, "Oct 27", "A1", false, 1)
-        repository.setParts(listOf(testPart))
-        
-        viewModel.load()
+    fun `offline fallback message`() = runTest {
+        repository.throwOnRefresh = IOException("network")
+        val vm = PartsListViewModel(repository, mainDispatcherRule.dispatcher)
 
-        viewModel.uiState.test {
-            val state = awaitItem() as PartsListState.Loaded
-            assertEquals(1, state.rows.size)
-            assertEquals("Offline, showing cached parts", state.message)
-        }
-    }
-
-    @Test
-    fun `query filtering updates parts list`() = runTest {
-        val p1 = PartRow("1", "SKU1", "Hammer", 10, 5, "Oct 27", "A1", false, 1)
-        val p2 = PartRow("2", "SKU2", "Nail", 50, 10, "Oct 27", "A2", false, 1)
-        repository.setParts(listOf(p1, p2))
-
-        viewModel.uiState.test {
-            val initialState = awaitItem() as PartsListState.Loaded
-            assertEquals(2, initialState.rows.size)
-
-            viewModel.onQueryChange("hammer")
-            val filteredState = awaitItem() as PartsListState.Loaded
-            assertEquals(1, filteredState.rows.size)
-            assertEquals("Hammer", filteredState.rows[0].name)
+        vm.uiState.test {
+            val initialState = awaitItem()
+            assertTrue(initialState is PartsListState.Loaded)
+            assertEquals("Offline, showing cached parts", (initialState as PartsListState.Loaded).message)
         }
     }
 }

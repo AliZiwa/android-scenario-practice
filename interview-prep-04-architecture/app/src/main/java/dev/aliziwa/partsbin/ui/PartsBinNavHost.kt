@@ -5,7 +5,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import dev.aliziwa.partsbin.AppDependencyContainer
 import dev.aliziwa.partsbin.ui.screens.PartDetailScreen
 import dev.aliziwa.partsbin.ui.screens.PartDetailViewModel
@@ -33,12 +32,9 @@ fun PartsBinNavHost(container: AppDependencyContainer) {
                 onOpenPart = { navController.navigate(PartsDetail(it)) }
             )
         }
-        composable<PartsDetail> { backStackEntry ->
-            val partsDetail = backStackEntry.toRoute<PartsDetail>()
-
+        composable<PartsDetail> {
             PartDetailScreen(
                 vm = viewModel(factory = PartDetailViewModel.Factory),
-                selectedPartId = partsDetail.selectedPartId,
                 onBack = { navController.popBackStack() }
             )
         }

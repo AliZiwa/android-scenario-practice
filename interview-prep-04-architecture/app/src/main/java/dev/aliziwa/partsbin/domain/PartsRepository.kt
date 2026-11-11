@@ -6,5 +6,5 @@ interface PartsRepository {
     fun observeParts(): Flow<List<Part>>
     fun observePart(id: String): Flow<Part?>
     suspend fun refreshParts()
-    suspend fun adjust(id: String, delta: Int, reason: String): Part
+    suspend fun adjust(id: String, delta: Int, reason: String): AdjustmentResult
 }

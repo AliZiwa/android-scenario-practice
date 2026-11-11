@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 
 sealed interface PartsDetailState {
     data object Loading : PartsDetailState
-    data class Loaded(val rowItem: PartRow) : PartsDetailState
+    data class Loaded(val rowItem: PartRow, val message: String? = null) : PartsDetailState
     data class Error(val message: String) : PartsDetailState
 }
 
@@ -45,14 +45,11 @@ class PartDetailViewModel(
         viewModelScope.launch(dispatcher) {
             repository.observePart(selectedPartId).collect { part ->
                 if (part != null) {
-                    uiState.value = PartsDetailState.Loaded(part)
+                    val currentMessage = (uiState.value as? PartsDetailState.Loaded)?.message
+                    uiState.value = PartsDetailState.Loaded(part, currentMessage)
                 }
             }
         }
-    }
-
-    fun isLowStock(): Boolean {
-        return (uiState.value as? PartsDetailState.Loaded)?.rowItem?.lowStock ?: false
     }
 
     fun adjust(selectedPartId: String, delta: Int, reason: String) {
@@ -60,18 +57,37 @@ class PartDetailViewModel(
         viewModelScope.launch(dispatcher) {
             try {
                 repository.adjust(selectedPartId, delta, reason)
-                // We no longer manually set the Loaded state here because observePart() handles it automatically.
             } catch (e: IllegalArgumentException) {
-                uiState.value = PartsDetailState.Error(e.message ?: "Invalid adjustment")
+                if (uiState.value is PartsDetailState.Loaded) {
+                     val currentPart = (uiState.value as PartsDetailState.Loaded).rowItem
+                     uiState.value = PartsDetailState.Loaded(currentPart, e.message ?: "Invalid adjustment")
+                } else {
+                     uiState.value = PartsDetailState.Error(e.message ?: "Invalid adjustment")
+                }
             } catch (e: dev.aliziwa.partsbin.domain.ServerException) {
-                uiState.value = PartsDetailState.Error(e.message ?: "Server Error")
+                if (uiState.value is PartsDetailState.Loaded) {
+                     val currentPart = (uiState.value as PartsDetailState.Loaded).rowItem
+                     uiState.value = PartsDetailState.Loaded(currentPart, e.message ?: "Server Error")
+                } else {
+                     uiState.value = PartsDetailState.Error(e.message ?: "Server Error")
+                }
             } catch (e: java.io.IOException) {
-                uiState.value = PartsDetailState.Error("Offline, adjustment not saved")
-            } catch (e: Exception) {
-                uiState.value = PartsDetailState.Error(e.toString())
+                if (uiState.value is PartsDetailState.Loaded) {
+                     val currentPart = (uiState.value as PartsDetailState.Loaded).rowItem
+                     uiState.value = PartsDetailState.Loaded(currentPart, "Offline, adjustment not saved")
+                } else {
+                     uiState.value = PartsDetailState.Error("Offline, adjustment not saved")
+                }
             } finally {
                 busy.value = false
             }
+        }
+    }
+    
+    fun dismissMessage() {
+        if (uiState.value is PartsDetailState.Loaded) {
+            val currentPart = (uiState.value as PartsDetailState.Loaded).rowItem
+            uiState.value = PartsDetailState.Loaded(currentPart, null)
         }
     }
 }

@@ -21,7 +21,6 @@ import java.io.IOException
 sealed interface PartsListState {
     data object Loading : PartsListState
     data class Loaded(val rows: List<PartRow>, val message: String? = null) : PartsListState
-    data class Error(val message: String) : PartsListState
 }
 
 class PartsListViewModel(

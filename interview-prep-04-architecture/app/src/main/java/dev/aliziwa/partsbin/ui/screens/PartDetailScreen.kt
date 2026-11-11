@@ -60,16 +60,14 @@ fun PartDetailScreen(
             when (uiState) {
                 PartsDetailState.Loading -> CircularProgressIndicator()
                 is PartsDetailState.Loaded -> {
-                    var showInformationBox by remember { mutableStateOf(true) }
-
                     (uiState as PartsDetailState.Loaded).let { loaded ->
                         val p = loaded.rowItem
                         Text(p.name, style = MaterialTheme.typography.titleLarge)
                         Text("Bin " + p.bin, style = MaterialTheme.typography.bodyMedium)
                         Text(
-                            "In stock: " + p.quantity + " (min " + p.minQuantity + ")" + if (vm.isLowStock()) "  LOW STOCK" else "",
+                            "In stock: " + p.quantity + " (min " + p.minQuantity + ")" + if (p.lowStock) "  LOW STOCK" else "",
                             style = MaterialTheme.typography.titleMedium,
-                            color = if (vm.isLowStock()) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                            color = if (p.lowStock) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
                         )
                         Text(
                             "Updated " + p.updatedAt + ", v" + p.version,
@@ -101,9 +99,10 @@ fun PartDetailScreen(
                             ) { Text("Restock") }
                         }
 
-                        if (showInformationBox) {
-                            InformationMessage(message = "Stock now " + p.quantity, color = MaterialTheme.colorScheme.primary) {
-                                showInformationBox = false
+                        val message = loaded.message
+                        if (message != null) {
+                            InformationMessage(message = message, color = MaterialTheme.colorScheme.primary) {
+                                vm.dismissMessage()
                             }
                         }
                     }

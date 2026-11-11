@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
  *  - `POST /parts/{id}/adjust` with `{"delta": n, "reason": "..."}` applies the delta, bumps `version`
  *    and `updatedAt`, and returns the part. Blank reason: 422 `reason_required`. Result below zero:
  *    422 `insufficient_stock`. Unknown id: 404.
- *  - When [AppContainer.offline] is true every request throws an [IOException], the way a dead radio would.
+ *  - When [dev.aliziwa.partsbin.domain.OfflineState.isOffline] is true every request throws an [IOException], the way a dead radio would.
  */
 class FakePartsBackend(
     private val offlineState: OfflineState = OfflineState(),
@@ -105,89 +105,17 @@ class FakePartsBackend(
         val JSON = "application/json; charset=utf-8".toMediaType()
 
         val SEED = listOf(
-            PartDto(
-                "p-01",
-                "FLT-0420",
-                "Fuel filter, inline 3/8",
-                6,
-                4,
-                "A1",
-                1,
-                "2026-10-20T08:00:00Z"
-            ),
-            PartDto(
-                "p-02",
-                "BLT-1180",
-                "Serpentine belt 1180mm",
-                2,
-                2,
-                "A2",
-                1,
-                "2026-10-20T08:00:00Z"
-            ),
-            PartDto(
-                "p-03",
-                "HSE-0750",
-                "Coolant hose 19mm, 750mm",
-                1,
-                3,
-                "A3",
-                1,
-                "2026-10-20T08:00:00Z"
-            ),
-            PartDto(
-                "p-04",
-                "CLP-0019",
-                "Hose clamp 19mm (box of 10)",
-                14,
-                10,
-                "B1",
-                1,
-                "2026-10-20T08:00:00Z"
-            ),
-            PartDto(
-                "p-05",
-                "FUS-0030",
-                "Blade fuse 30A (box of 20)",
-                0,
-                5,
-                "B2",
-                1,
-                "2026-10-20T08:00:00Z"
-            ),
+            PartDto("p-01", "FLT-0420", "Fuel filter, inline 3/8", 6, 4, "A1", 1, "2026-10-20T08:00:00Z"),
+            PartDto("p-02", "BLT-1180", "Serpentine belt 1180mm", 2, 2, "A2", 1, "2026-10-20T08:00:00Z"),
+            PartDto("p-03", "HSE-0750", "Coolant hose 19mm, 750mm", 1, 3, "A3", 1, "2026-10-20T08:00:00Z"),
+            PartDto("p-04", "CLP-0019", "Hose clamp 19mm (box of 10)", 14, 10, "B1", 1, "2026-10-20T08:00:00Z"),
+            PartDto("p-05", "FUS-0030", "Blade fuse 30A (box of 20)", 0, 5, "B2", 1, "2026-10-20T08:00:00Z"),
             PartDto("p-06", "RLY-0012", "Relay 12V 40A", 3, 2, "B3", 1, "2026-10-20T08:00:00Z"),
             PartDto("p-07", "THM-0082", "Thermostat 82C", 2, 1, "C1", 1, "2026-10-20T08:00:00Z"),
             PartDto("p-08", "GSK-0082", "Thermostat gasket", 5, 2, "C1", 1, "2026-10-20T08:00:00Z"),
-            PartDto(
-                "p-09",
-                "BRK-0210",
-                "Brake pad set, front",
-                1,
-                1,
-                "C2",
-                1,
-                "2026-10-20T08:00:00Z"
-            ),
-            PartDto(
-                "p-10",
-                "OIL-5W30",
-                "Engine oil 5W-30, 5L",
-                4,
-                6,
-                "D1",
-                1,
-                "2026-10-20T08:00:00Z"
-            ),
-            PartDto(
-                "p-11",
-                "OFL-0330",
-                "Oil filter spin-on",
-                8,
-                4,
-                "D2",
-                1,
-                "2026-10-20T08:00:00Z"
-            ),
+            PartDto("p-09", "BRK-0210", "Brake pad set, front", 1, 1, "C2", 1, "2026-10-20T08:00:00Z"),
+            PartDto("p-10", "OIL-5W30", "Engine oil 5W-30, 5L", 4, 6, "D1", 1, "2026-10-20T08:00:00Z"),
+            PartDto("p-11", "OFL-0330", "Oil filter spin-on", 8, 4, "D2", 1, "2026-10-20T08:00:00Z"),
             PartDto("p-12", "WIP-0600", "Wiper blade 600mm", 3, 2, "D3", 1, "2026-10-20T08:00:00Z"),
         )
     }

@@ -41,10 +41,6 @@ fun PartsListScreen(
     val isOffline by offlineState.isOffline.collectAsStateWithLifecycle()
     val query by vm.query.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        vm.load()
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -72,7 +68,6 @@ fun PartsListScreen(
             }
             val message = when (val s = uiState) {
                 is PartsListState.Loaded -> s.message
-                is PartsListState.Error -> s.message
                 else -> null
             }
 

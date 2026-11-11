@@ -1,0 +1,32 @@
+[
+  {
+    "id": "g-01",
+    "note": "Coolant hose split at the thermostat housing. Replaced HSE-0750 x1 and CLP-0019 x2, topped up and pressure tested. Customer Dana Okafor, call back on 555-0142 or dana.okafor@example.com.",
+    "expectedParts": [{"sku": "HSE-0750", "qty": 1}, {"sku": "CLP-0019", "qty": 2}],
+    "promptMustNotContain": ["555-0142", "dana.okafor@example.com"]
+  },
+  {
+    "id": "g-02",
+    "note": "Routine service. Oil OIL-5W30 x1, filter OFL-0330 x1, fuel filter FLT-0420 x1. Brake pads at 3mm, advised BRK-0210 next visit.",
+    "expectedParts": [{"sku": "OIL-5W30", "qty": 1}, {"sku": "OFL-0330", "qty": 1}, {"sku": "FLT-0420", "qty": 1}, {"sku": "BRK-0210", "qty": 1}],
+    "promptMustNotContain": []
+  },
+  {
+    "id": "g-03",
+    "note": "Both wiper blades perished. WIP-0600 x2 fitted. Quick one.",
+    "expectedParts": [{"sku": "WIP-0600", "qty": 2}],
+    "promptMustNotContain": []
+  },
+  {
+    "id": "g-04",
+    "note": "Slow crank in the cold. Battery replaced under warranty, no parts from the van. Customer phone 555-0199.",
+    "expectedParts": [],
+    "promptMustNotContain": ["555-0199"]
+  },
+  {
+    "id": "g-05",
+    "note": "Took a WIP-0600 off the shelf for the Caddy but did not use it in the end, put it back. Nothing fitted.",
+    "expectedParts": [],
+    "promptMustNotContain": []
+  }
+]

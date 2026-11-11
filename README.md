@@ -33,7 +33,7 @@ Interview preparation for Senior and Staff Android roles, run as graded engineer
 | 02 | Enhancement | [`interview-prep-02-enhancement`](interview-prep-02-enhancement) | Passed, 21/25 (2 rounds) |
 | 03 | Code smells | [`interview-prep-03-code-smells`](interview-prep-03-code-smells) | Passed, 20/25 (4 rounds) |
 | 04 | Architecture | [`interview-prep-04-architecture`](interview-prep-04-architecture) | Passed, 20/25 (3 rounds) |
-| 05 | AI integration | | |
+| 05 | AI integration | [`interview-prep-05-ai-integration`](interview-prep-05-ai-integration) | Open, due Nov 13 |
 | 06 | Testing | | |
 | 07 | Performance | | |
 | 08 | Concurrency | | |

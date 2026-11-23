@@ -2,7 +2,7 @@
 
 Status: Proposed · Date: · Author:
 
-Keep this to about a page. Write it before the code, and update it when the code teaches you something. Where this document and the code disagree at review time, the document loses. Delete these instruction paragraphs when you fill the sections in.
+This is an ADR (architecture decision record): a one-page note that says what you decided and why, so a teammate can understand the design without reading the code. Fill in each section below in your own words. Keep this to about a page. Write it before the code, and update it when the code teaches you something. Where this document and the code disagree at review time, the document loses. Delete these instruction paragraphs when you fill the sections in.
 
 ## Context
 

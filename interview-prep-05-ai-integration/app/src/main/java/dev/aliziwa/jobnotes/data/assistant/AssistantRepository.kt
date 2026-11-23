@@ -15,10 +15,14 @@ import retrofit2.HttpException
  * Process-wide holder for the last summary, so the detail screen can show it when it comes back.
  */
 object LastSummary {
-    @Volatile var noteId: String? = null
-    @Volatile var text: String? = null
-    @Volatile var parts: List<PartLine> = emptyList()
-    @Volatile var stockReport: String? = null
+    @Volatile
+    var noteId: String? = null
+    @Volatile
+    var text: String? = null
+    @Volatile
+    var parts: List<PartLine> = emptyList()
+    @Volatile
+    var stockReport: String? = null
 }
 
 /**
@@ -56,13 +60,21 @@ Allowed action types: add_parts, delete_note, report_stock."""
 
     suspend fun summarize(note: Note): JobSummary {
         val sanitizedPrompt = sanitize(note.body)
-        val prompt = "$INSTRUCTIONS\n\nNOTE:\n$sanitizedPrompt"
         val request = SummaryRequest(
             model = MODEL,
-            messages = listOf(Message(role = "system", content = prompt)),
+            messages = listOf(
+                Message(role = "system", content = INSTRUCTIONS),
+                Message(role = "user", content = "\n\nNOTE: $sanitizedPrompt")
+            ),
             stream = false,
         )
-        Log.d(TAG, "POST /v1/summaries key=${SecretMask(API_KEY)} body=" + json.encodeToString(SummaryRequest.serializer(), request))
+        Log.d(
+            TAG,
+            "POST /v1/summaries key=${SecretMask(API_KEY)} body=" + json.encodeToString(
+                SummaryRequest.serializer(),
+                request
+            )
+        )
 
         var response: SummaryResponse? = null
         repeat(5) {
@@ -76,7 +88,10 @@ Allowed action types: add_parts, delete_note, report_stock."""
             }
         }
         val answer = response ?: throw IllegalStateException("assistant busy")
-        Log.d(TAG, "usage in=${answer.usage.inputTokens} out=${answer.usage.outputTokens} output=${answer.output}")
+        Log.d(
+            TAG,
+            "usage in=${answer.usage.inputTokens} out=${answer.usage.outputTokens} output=${answer.output}"
+        )
 
         val output = json.decodeFromString(ModelOutput.serializer(), answer.output)
 

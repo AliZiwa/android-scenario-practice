@@ -1,8 +1,16 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
+}
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if(localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
 }
 
 android {
@@ -18,6 +26,9 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val apiKey = localProperties.getProperty("API_KEY")
+        buildConfigField("String", "API_KEY", "$apiKey")
     }
 
     buildTypes {
@@ -33,8 +44,6 @@ android {
     }
     buildFeatures {
         compose = true
-        // BuildConfig is on so that a key read from local.properties has somewhere to land.
-        // Nothing reads it yet; see README, problem 1.
         buildConfig = true
     }
 }
@@ -80,4 +89,6 @@ dependencies {
 
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    lintChecks(project(":lint"))
 }

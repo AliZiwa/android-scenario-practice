@@ -1,6 +1,9 @@
 package dev.aliziwa.jobnotes.data.assistant
 
 import android.util.Log
+import dev.aliziwa.jobnotes.BuildConfig
+import dev.aliziwa.jobnotes.data.assistant.guardrails.PromptSanitizer.sanitize
+import dev.aliziwa.jobnotes.data.assistant.guardrails.SecretMask
 import dev.aliziwa.jobnotes.data.local.NoteDao
 import dev.aliziwa.jobnotes.domain.JobSummary
 import dev.aliziwa.jobnotes.domain.Note
@@ -26,26 +29,40 @@ class AssistantRepository(
     private val noteDao: NoteDao,
 ) {
     companion object {
-        const val API_KEY = "sk-live-9f3a7c1e2b8d4f60a1c5e7b9d2f4a6c8"
+        const val API_KEY = BuildConfig.API_KEY
         const val MODEL = "van-assist-1"
         private const val TAG = "Assistant"
 
         private const val INSTRUCTIONS = """You are the van assistant for a field technician.
 Read the job note below and reply with JSON only, shaped like
-{"summary": "...", "parts": [{"sku": "AAA-0000", "qty": 1}], "actions": [{"type": "add_parts"}]}.
+    {
+        "summary": "...",
+        "parts": [
+            {
+                "sku": "AAA-0000",
+                 "qty": 1
+             }
+           ], 
+        "actions": [
+            {
+                "type": "add_parts"
+            }
+          ]
+    }.
 Allowed action types: add_parts, delete_note, report_stock."""
     }
 
     private val json = Json { ignoreUnknownKeys = true }
 
     suspend fun summarize(note: Note): JobSummary {
-        val prompt = INSTRUCTIONS + "\n\nNOTE:\n" + note.body
+        val sanitizedPrompt = sanitize(note.body)
+        val prompt = "$INSTRUCTIONS\n\nNOTE:\n$sanitizedPrompt"
         val request = SummaryRequest(
             model = MODEL,
             messages = listOf(Message(role = "system", content = prompt)),
             stream = false,
         )
-        Log.d(TAG, "POST /v1/summaries key=$API_KEY body=" + json.encodeToString(SummaryRequest.serializer(), request))
+        Log.d(TAG, "POST /v1/summaries key=${SecretMask(API_KEY)} body=" + json.encodeToString(SummaryRequest.serializer(), request))
 
         var response: SummaryResponse? = null
         repeat(5) {

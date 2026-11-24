@@ -9,11 +9,13 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
 import dev.aliziwa.jobnotes.JobNotesApp
 import dev.aliziwa.jobnotes.data.assistant.AssistantRepository
+import dev.aliziwa.jobnotes.data.assistant.AssistantResult
 import dev.aliziwa.jobnotes.data.assistant.LastSummary
 import dev.aliziwa.jobnotes.domain.Note
 import dev.aliziwa.jobnotes.domain.NotesRepository
 import dev.aliziwa.jobnotes.domain.PartLine
 import dev.aliziwa.jobnotes.ui.NoteDetail
+import dev.aliziwa.jobnotes.ui.screens.SummaryUiState.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +33,7 @@ sealed interface SummaryUiState {
     data object Working : SummaryUiState
     data class Done(val summary: String, val parts: List<PartLine>) : SummaryUiState
     data class Failed(val message: String) : SummaryUiState
+    data class Streaming(val text: String) : SummaryUiState
 }
 
 class NoteDetailViewModel(
@@ -55,28 +58,43 @@ class NoteDetailViewModel(
     val note: StateFlow<Note?> = notes.observeNote(noteId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    private val _summary = MutableStateFlow<SummaryUiState>(SummaryUiState.Idle)
+    private val _summary = MutableStateFlow<SummaryUiState>(Idle)
     val summary: StateFlow<SummaryUiState> = _summary.asStateFlow()
 
     init {
         // Show whatever the assistant said last, so the screen is not empty while it thinks.
         val last = LastSummary.text
         if (last != null) {
-            _summary.value = SummaryUiState.Done(last, LastSummary.parts)
+            _summary.value = Done(last, LastSummary.parts)
         }
     }
 
     fun summarize() {
         val current = note.value ?: return
-        _summary.value = SummaryUiState.Working
+        val stream = true
+        if (!stream) {
+            _summary.value = Working
+        }
         workScope.launch {
             try {
-                val result = assistant.summarize(current)
-                _summary.value = SummaryUiState.Done(result.summary, result.parts)
+                assistant.summarize(current, stream).collect { result ->
+                    when(result) {
+                        is AssistantResult.Partial -> {
+                            _summary.value = Streaming(result.currentText)
+                        }
+
+                        is AssistantResult.Success -> {
+                            _summary.value = Done(result.summary, result.parts)
+                        }
+                        is AssistantResult.Error ->  {
+                            _summary.value = Failed(result.message)
+                        }
+                    }
+                }
             } catch (e: HttpException) {
-                _summary.value = SummaryUiState.Failed("Server said " + e.code())
+                _summary.value = Failed("Server said " + e.code())
             } catch (e: IOException) {
-                _summary.value = SummaryUiState.Failed(e.toString())
+                _summary.value = Failed(e.toString())
             }
         }
     }

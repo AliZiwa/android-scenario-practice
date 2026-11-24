@@ -1,9 +1,11 @@
 package dev.aliziwa.jobnotes.data.assistant
 
 import kotlinx.serialization.Serializable
+import okhttp3.ResponseBody
 import retrofit2.http.Body
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Streaming
 
 /**
  * The wire format of the "van assistant" service. See README for the contract and
@@ -89,4 +91,11 @@ interface AssistantApi {
         @Header("Authorization") authorization: String,
         @Body body: SummaryRequest,
     ): SummaryResponse
+
+    @Streaming
+    @POST("v1/summaries")
+    suspend fun summariesStream(
+        @Header("Authorization") authorization: String,
+        @Body body: SummaryRequest,
+    ): ResponseBody
 }

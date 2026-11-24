@@ -93,6 +93,10 @@ fun NoteDetailScreen(
                     Spacer(Modifier.width(8.dp))
                     Text("Thinking...")
                 }
+                is SummaryUiState.Streaming -> {
+                    Text(s.text, style = MaterialTheme.typography.bodyLarge)
+                    Spacer(Modifier.height(8.dp))
+                }
                 is SummaryUiState.Done -> {
                     Text(s.summary, style = MaterialTheme.typography.bodyLarge)
                     Spacer(Modifier.height(8.dp))

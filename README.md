@@ -4,7 +4,7 @@ Interview preparation for Senior and Staff Android roles, run as graded engineer
 
 ## How it works
 
-1. A new folder `interview-prep-<nn>-<area>` lands on `main` with base code, a `README.md` brief, a timebox, and references.
+1. A new folder `interview-prep-<nn>-<area>` lands on `main` with base code, a `README.md` brief (timebox 8 hours, spread over two days), a `LEARNING.md` saying what the assignment teaches and its level (beginner, intermediate, advanced, expert), and references.
 2. Ali works on a branch named `<nn>-<area>` and opens a PR into `main`.
 3. The PR is reviewed line by line. `SCORE.md` (rubric, 1 to 5 per dimension, 20 to pass) and `INTERVIEW.md` (the questions a Staff interviewer would ask about that exact code) are pushed to the branch.
 4. The PR is merged. The next assignment follows.

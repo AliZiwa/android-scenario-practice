@@ -1,6 +1,6 @@
 # Assignment 05: AI integration
 
-**Area:** AI integration · **Timebox:** 3 hours · **Due:** Friday, November 13 · **Branch:** `05-ai-integration` · **Submit:** pull request into `main`
+**Area:** AI integration · **Timebox:** 8 hours · **Due:** Friday, November 13 · **Branch:** `05-ai-integration` · **Submit:** pull request into `main`
 
 ## Start here
 
@@ -54,7 +54,8 @@ One structural rule on top: the `ui` package must reach the assistant only throu
 
 - No AI-written code and no AI-written ADR. Documentation is open. Say in the PR body how you produced the work.
 - Commit as you go, one decision per commit.
-- Three hours: about 30 minutes reading and writing the ADR, 90 minutes on the fixes, 60 on tests and the golden set.
+- Eight hours, spread over the two days as you like: about 1 hour reading the code and writing the ADR, 4 hours on the fixes, 2 hours on tests and the golden set, 1 hour for the PR and reading documentation you did not know. Stop at 8 hours even if not finished.
+- What you will learn and how hard this is: see `LEARNING.md` in this folder.
 - If you run out of time, submit what you have and say in the ADR what is missing. A clean partial scores better than a rushed complete. A non-streaming version with every rule tested beats a streaming one with the rules half done.
 - Out of scope: no on-device model, no real provider SDK, no `WorkManager`, no Hilt, no new features.
 
